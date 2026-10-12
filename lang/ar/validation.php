@@ -1,0 +1,51 @@
+<?php
+
+return [
+    'accepted' => 'يجب قبول :attribute.',
+    'active_url' => ':attribute ليس عنوان URL صالحًا.',
+    'after' => 'يجب أن يكون :attribute تاريخًا بعد :date.',
+    'alpha' => 'يجب أن يحتوي :attribute على أحرف فقط.',
+    'alpha_num' => 'يجب أن يحتوي :attribute على أحرف وأرقام فقط.',
+    'array' => 'يجب أن يكون :attribute مصفوفة.',
+    'before' => 'يجب أن يكون :attribute تاريخًا قبل :date.',
+    'between' => [
+        'numeric' => 'يجب أن يكون :attribute بين :min و :max.',
+        'file' => 'يجب أن يكون حجم :attribute بين :min و :max كيلوبايت.',
+        'string' => 'يجب أن يكون عدد أحرف :attribute بين :min و :max حرفًا.',
+        'array' => 'يجب أن يحتوي :attribute على عناصر بين :min و :max عنصرًا.',
+    ],
+    'boolean' => 'يجب أن تكون قيمة :attribute صواب أو خطأ.',
+    'confirmed' => 'تأكيد :attribute غير متطابق.',
+    'date' => ':attribute ليس تاريخًا صالحًا.',
+    'email' => 'يجب أن يكون :attribute عنوان بريد إلكتروني صالحًا.',
+    'exists' => 'القيمة المحددة لـ :attribute غير صالحة.',
+    'filled' => 'حقل :attribute مطلوب.',
+    'integer' => 'يجب أن يكون :attribute عددًا صحيحًا.',
+    'max' => [
+        'numeric' => 'يجب ألا يكون :attribute أكبر من :max.',
+        'file' => 'يجب ألا يتعدى حجم :attribute :max كيلوبايت.',
+        'string' => 'يجب ألا يتجاوز :attribute :max حرفًا.',
+        'array' => 'يجب ألا يحتوي :attribute على أكثر من :max عنصرًا.',
+    ],
+    'min' => [
+        'numeric' => 'يجب أن يكون :attribute على الأقل :min.',
+        'file' => 'يجب أن يكون حجم :attribute على الأقل :min كيلوبايت.',
+        'string' => 'يجب أن يحتوي :attribute على الأقل على :min حروف.',
+        'array' => 'يجب أن يحتوي :attribute على الأقل على :min عناصر.',
+    ],
+    'numeric' => 'يجب أن يكون :attribute رقمًا.',
+    'required' => 'حقل :attribute مطلوب.',
+    'string' => 'يجب أن يكون :attribute نصًا.',
+    'unique' => 'قيمة :attribute مستخدمة بالفعل.',
+
+    'attributes' => [
+        'name' => 'الاسم',
+        'username' => 'اسم المستخدم',
+        'email' => 'البريد الإلكتروني',
+        'phone' => 'رقم الجوال',
+        'password' => 'كلمة المرور',
+        'type' => 'نوع المستخدم',
+        'login' => 'بيانات الدخول',
+        'user_id' => 'المستخدم',
+    ],
+];
