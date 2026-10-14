@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Collector;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StoreTenantNoteRequest;
+use App\Http\Requests\GeneralManager\StoreTenantNoteRequest;
 use App\Http\Resources\TenantNoteResource;
 use App\Models\TenantInfo;
 use App\Support\ApiResponse;

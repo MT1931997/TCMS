@@ -23,7 +23,7 @@ class TenantImportApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->supervisor = User::factory()->supervisor()->create();
+        $this->supervisor = User::factory()->generalManager()->create();
         $this->collector = User::factory()->collector()->create(['name' => 'المحصل الأول']);
         $this->owner = User::factory()->owner()->create(['name' => 'المالك الأول']);
     }
@@ -31,7 +31,7 @@ class TenantImportApiTest extends TestCase
     public function test_supervisor_can_download_excel_template(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->get(route('api.supervisor.tenants.import.template'));
+            ->get(route('api.general-manager.tenants.import.template'));
 
         $response->assertOk();
         $this->assertStringContainsString('spreadsheetml', (string) $response->headers->get('content-type'));
@@ -92,7 +92,7 @@ class TenantImportApiTest extends TestCase
         );
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.import'), [
+            ->postJson(route('api.general-manager.tenants.import'), [
                 'file' => $uploadedFile,
             ]);
 
@@ -163,7 +163,7 @@ class TenantImportApiTest extends TestCase
         $writer->save($tempPath);
 
         $uploadedFile = new UploadedFile($tempPath, 'tenants_test.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
-        $this->actingAs($this->supervisor, 'sanctum')->postJson(route('api.supervisor.tenants.import'), ['file' => $uploadedFile]);
+        $this->actingAs($this->supervisor, 'sanctum')->postJson(route('api.general-manager.tenants.import'), ['file' => $uploadedFile]);
         @unlink($tempPath);
 
         // Second import updating the same tenant with contract number and updated target
@@ -197,7 +197,7 @@ class TenantImportApiTest extends TestCase
 
         $uploadedFile2 = new UploadedFile($tempPath2, 'tenants_update.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.import'), ['file' => $uploadedFile2]);
+            ->postJson(route('api.general-manager.tenants.import'), ['file' => $uploadedFile2]);
         @unlink($tempPath2);
 
         $response->assertOk()
@@ -222,7 +222,7 @@ class TenantImportApiTest extends TestCase
     public function test_import_fails_without_file(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.import'), []);
+            ->postJson(route('api.general-manager.tenants.import'), []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['file']);

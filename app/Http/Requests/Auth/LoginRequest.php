@@ -23,11 +23,16 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        $validTypes = array_merge(
+            array_map(fn (UserType $t): string => $t->value, UserType::cases()),
+            ['supervisor', 'supervisors']
+        );
+
         return [
             'login' => ['required_without:user_id', 'nullable', 'string'],
             'user_id' => ['required_without:login', 'nullable', 'integer', 'exists:users,id'],
             'password' => ['required', 'string'],
-            'type' => ['nullable', 'string', Rule::enum(UserType::class)],
+            'type' => ['nullable', 'string', Rule::in($validTypes)],
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
     }

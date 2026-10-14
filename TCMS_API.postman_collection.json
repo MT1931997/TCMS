@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "tcms-api-collection-v2-full",
         "name": "TCMS - نظام إدارة تحصيلات المستأجرين (Complete with Success & Fail Responses)",
-        "description": "مجموعة طلبات Postman الشاملة لنظام إدارة تحصيلات المستأجرين (TCMS) - مؤسسة سعود علي السقامي للعقارات. تحتوي المجموعة على جميع مسارات المصادقة، موديول المشرف، موديول المحصل، وموديول المالك، مع أمثلة استجابة لكل طلب لكل من حالات النجاح (Success 200/201) وحالات الفشل والتحقق والصلاحيات (Fail 401, 403, 404, 422).",
+        "description": "مجموعة طلبات Postman الشاملة لنظام إدارة تحصيلات المستأجرين (TCMS) - مؤسسة سعود علي السقامي للعقارات. تحتوي المجموعة على جميع مسارات المصادقة، موديول المشرف العام، موديول المحصل، وموديول المالك، مع أمثلة استجابة لكل طلب لكل من حالات النجاح (Success 200/201) وحالات الفشل والتحقق والصلاحيات (Fail 401, 403, 404, 422).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -72,7 +72,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/auth/users-by-type?type=supervisor",
+                            "raw": "{{base_url}}/auth/users-by-type?type=general_manager",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -84,7 +84,7 @@
                                 {
                                     "key": "type",
                                     "value": "supervisor",
-                                    "description": "نوع المستخدم المطلوب: general_manager, supervisor, collector, owner, maintenance_supervisor, tenant"
+                                    "description": "نوع المستخدم المطلوب: general_manager, real_estate_supervisor, collection_supervisor, maintenance_supervisor, owner, collector, tenant"
                                 }
                             ]
                         },
@@ -92,7 +92,7 @@
                     },
                     "response": [
                         {
-                            "name": "200 Success - قائمة المستخدمين",
+                            "name": "200 OK - قائمة المشرفين مع نوع المشرف واسم العرض",
                             "status": "OK",
                             "code": 200,
                             "_postman_previewlanguage": "json",
@@ -102,11 +102,11 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\n    \"success\": true,\n    \"message\": \"قائمة المستخدمين المتاحين للنوع المحدد.\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"name\": \"المشرف العام\",\n            \"username\": \"gm\"\n        },\n        {\n            \"id\": 3,\n            \"name\": \"المشرف الميداني\",\n            \"username\": \"supervisor1\"\n        }\n    ]\n}"
+                            "body": "{\n    \"success\": true,\n    \"message\": \"قائمة المستخدمين المتاحين للنوع المحدد.\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"value\": 1,\n            \"name\": \"المشرف العام\",\n            \"username\": \"admin\",\n            \"type\": \"general_manager\",\n            \"type_label\": \"مشرف عام\",\n            \"type_description\": \"جميع الصلاحيات\",\n            \"display_name\": \"المشرف العام – مشرف عام\",\n            \"name_with_type\": \"المشرف العام – مشرف عام\",\n            \"label\": \"المشرف العام – مشرف عام\"\n        },\n        {\n            \"id\": 2,\n            \"value\": 2,\n            \"name\": \"مشرف العقارات\",\n            \"username\": \"realestate_supervisor\",\n            \"type\": \"real_estate_supervisor\",\n            \"type_label\": \"مشرف عقارات\",\n            \"type_description\": \"العقود وتجديدها وتحديث بيانات المستأجرين، إضافة لكل صلاحيات مشرف التحصيل والمتابعة\",\n            \"display_name\": \"مشرف العقارات – مشرف عقارات\",\n            \"name_with_type\": \"مشرف العقارات – مشرف عقارات\",\n            \"label\": \"مشرف العقارات – مشرف عقارات\"\n        },\n        {\n            \"id\": 3,\n            \"value\": 3,\n            \"name\": \"مشرف التحصيل والمتابعة\",\n            \"username\": \"collection_supervisor\",\n            \"type\": \"collection_supervisor\",\n            \"type_label\": \"مشرف تحصيل ومتابعة\",\n            \"type_description\": \"استيراد المستأجرين وتعديلهم وحذفهم، اعتماد السدادات، متابعة التحصيل، وإدارة الشقق الشاغرة\",\n            \"display_name\": \"مشرف التحصيل والمتابعة – مشرف تحصيل ومتابعة\",\n            \"name_with_type\": \"مشرف التحصيل والمتابعة – مشرف تحصيل ومتابعة\",\n            \"label\": \"مشرف التحصيل والمتابعة – مشرف تحصيل ومتابعة\"\n        },\n        {\n            \"id\": 4,\n            \"value\": 4,\n            \"name\": \"مشرف الصيانة\",\n            \"username\": \"maint1\",\n            \"type\": \"maintenance_supervisor\",\n            \"type_label\": \"مشرف صيانه\",\n            \"type_description\": \"أدوات الصيانة فقط والتحكم بها وإرسالها للمالك\",\n            \"display_name\": \"مشرف الصيانة – مشرف صيانه\",\n            \"name_with_type\": \"مشرف الصيانة – مشرف صيانه\",\n            \"label\": \"مشرف الصيانة – مشرف صيانه\"\n        }\n    ]\n}"
                         },
                         {
-                            "name": "422 Error - نوع مستخدم غير صالح أو مفقود",
-                            "status": "Unprocessable Entity",
+                            "name": "422 Unprocessable Content - خطأ في التحقق - نوع المستخدم غير صالح",
+                            "status": "Unprocessable Content",
                             "code": 422,
                             "_postman_previewlanguage": "json",
                             "header": [
@@ -351,8 +351,1389 @@
             ]
         },
         {
-            "name": "موديول المشرف (Supervisor Module)",
+            "name": "موديول المشرف العام (General Manager Module)",
             "item": [
+                {
+                    "name": "المستخدمون والصلاحيات (المشرفون)",
+                    "description": "إدارة حسابات المشرفين: العرض مع الإحصائيات، البحث بالاسم، إضافة مشرف جديد، تعديل البيانات وكلمة المرور، وإيقاف الحساب أو حذفه.",
+                    "item": [
+                        {
+                            "name": "قائمة المشرفين والإحصائيات والبحث بالاسم",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors?search=",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "search",
+                                            "value": "",
+                                            "description": "البحث بالاسم أو رقم الجوال أو اسم المستخدم"
+                                        },
+                                        {
+                                            "key": "type",
+                                            "value": "",
+                                            "description": "فلترة بنوع المشرف (general_manager, real_estate_supervisor, collection_supervisor, maintenance_supervisor)"
+                                        }
+                                    ]
+                                },
+                                "description": "جلب قائمة المشرفين مع إحصائيات كل نوع، وحالة النشاط، والبحث بالاسم."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - قائمة المشرفين مع الإحصائيات",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم جلب قائمة المشرفين بنجاح.\",\n    \"data\": {\n        \"supervisors\": [\n            {\n                \"id\": 1,\n                \"name\": \"المشرف العام\",\n                \"username\": \"admin\",\n                \"email\": \"admin@tcms.sa\",\n                \"phone\": \"0500000001\",\n                \"national_id\": null,\n                \"type\": \"general_manager\",\n                \"type_label\": \"مشرف عام\",\n                \"type_description\": \"جميع الصلاحيات\",\n                \"is_active\": true,\n                \"is_current_user\": true,\n                \"tenants_count\": null,\n                \"collected_this_month\": null,\n                \"target_this_month\": null,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:00:00+03:00\"\n            },\n            {\n                \"id\": 2,\n                \"name\": \"مشرف العقارات\",\n                \"username\": \"realestate_supervisor\",\n                \"email\": \"realestate@tcms.sa\",\n                \"phone\": \"0500000003\",\n                \"national_id\": null,\n                \"type\": \"real_estate_supervisor\",\n                \"type_label\": \"مشرف عقارات\",\n                \"type_description\": \"العقود وتجديدها وتحديث بيانات المستأجرين، إضافة لكل صلاحيات مشرف التحصيل والمتابعة\",\n                \"is_active\": true,\n                \"is_current_user\": false,\n                \"tenants_count\": null,\n                \"collected_this_month\": null,\n                \"target_this_month\": null,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:05:00+03:00\"\n            },\n            {\n                \"id\": 3,\n                \"name\": \"مشرف التحصيل والمتابعة\",\n                \"username\": \"collection_supervisor\",\n                \"email\": \"collection_mgr@tcms.sa\",\n                \"phone\": \"0500000006\",\n                \"national_id\": null,\n                \"type\": \"collection_supervisor\",\n                \"type_label\": \"مشرف تحصيل ومتابعة\",\n                \"type_description\": \"استيراد المستأجرين وتعديلهم وحذفهم، اعتماد السدادات، متابعة التحصيل، وإدارة الشقق الشاغرة\",\n                \"is_active\": true,\n                \"is_current_user\": false,\n                \"tenants_count\": null,\n                \"collected_this_month\": null,\n                \"target_this_month\": null,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:10:00+03:00\"\n            },\n            {\n                \"id\": 4,\n                \"name\": \"مشرف الصيانة\",\n                \"username\": \"maint1\",\n                \"email\": \"maintenance@tcms.sa\",\n                \"phone\": \"0500000005\",\n                \"national_id\": null,\n                \"type\": \"maintenance_supervisor\",\n                \"type_label\": \"مشرف صيانه\",\n                \"type_description\": \"أدوات الصيانة فقط والتحكم بها وإرسالها للمالك\",\n                \"is_active\": true,\n                \"is_current_user\": false,\n                \"tenants_count\": null,\n                \"collected_this_month\": null,\n                \"target_this_month\": null,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:15:00+03:00\"\n            }\n        ],\n        \"statistics\": {\n            \"all_count\": 4,\n            \"general_manager_count\": 1,\n            \"real_estate_count\": 1,\n            \"collection_count\": 1,\n            \"maintenance_count\": 1,\n            \"active_count\": 4,\n            \"inactive_count\": 0\n        },\n        \"types\": [\n            {\n                \"value\": \"general_manager\",\n                \"label\": \"مشرف عام\",\n                \"description\": \"جميع الصلاحيات\"\n            },\n            {\n                \"value\": \"real_estate_supervisor\",\n                \"label\": \"مشرف عقارات\",\n                \"description\": \"العقود وتجديدها وتحديث بيانات المستأجرين، إضافة لكل صلاحيات مشرف التحصيل والمتابعة\"\n            },\n            {\n                \"value\": \"collection_supervisor\",\n                \"label\": \"مشرف تحصيل ومتابعة\",\n                \"description\": \"استيراد المستأجرين وتعديلهم وحذفهم، اعتماد السدادات، متابعة التحصيل، وإدارة الشقق الشاغرة\"\n            },\n            {\n                \"value\": \"maintenance_supervisor\",\n                \"label\": \"مشرف صيانه\",\n                \"description\": \"أدوات الصيانة فقط والتحكم بها وإرسالها للمالك\"\n            }\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إضافة مشرف جديد",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"فهد المطيري\",\n    \"type\": \"real_estate_supervisor\",\n    \"phone\": \"0555123456\",\n    \"password\": \"secret123\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors"
+                                    ]
+                                },
+                                "description": "إضافة مشرف جديد وتحديد نوعه وصلاحياته ورقم جواله وكلمة المرور."
+                            },
+                            "response": [
+                                {
+                                    "name": "201 Created - تمت إضافة المشرف بنجاح",
+                                    "status": "Created",
+                                    "code": 201,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة المشرف بنجاح.\",\n    \"data\": {\n        \"id\": 5,\n        \"name\": \"فهد المطيري\",\n        \"username\": \"fahad_almutairi_x8k2\",\n        \"email\": null,\n        \"phone\": \"0555123456\",\n        \"national_id\": null,\n        \"type\": \"real_estate_supervisor\",\n        \"type_label\": \"مشرف عقارات\",\n        \"type_description\": \"العقود وتجديدها وتحديث بيانات المستأجرين، إضافة لكل صلاحيات مشرف التحصيل والمتابعة\",\n        \"is_active\": true,\n        \"is_current_user\": false,\n        \"created_at\": \"2026-10-14T12:00:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق - الحقول الإلزامية أو رقم الجوال مكرر",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"اسم المشرف مطلوب. (and 2 more errors)\",\n    \"errors\": {\n        \"name\": [\n            \"اسم المشرف مطلوب.\"\n        ],\n        \"phone\": [\n            \"رقم الجوال مسجل مسبقاً لمستخدم آخر.\"\n        ],\n        \"password\": [\n            \"يجب أن تتكون كلمة المرور من 4 أحرف على الأقل.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "عرض تفاصيل مشرف محدد",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors/2",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors",
+                                        "2"
+                                    ]
+                                },
+                                "description": "جلب بيانات مشرف محدد."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - بيانات المشرف المحدد",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"بيانات المشرف.\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"مشرف العقارات\",\n        \"username\": \"realestate_supervisor\",\n        \"email\": \"realestate@tcms.sa\",\n        \"phone\": \"0500000003\",\n        \"type\": \"real_estate_supervisor\",\n        \"type_label\": \"مشرف عقارات\",\n        \"type_description\": \"العقود وتجديدها وتحديث بيانات المستأجرين، إضافة لكل صلاحيات مشرف التحصيل والمتابعة\",\n        \"is_active\": true,\n        \"created_at\": \"2026-10-14T08:05:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - المستخدم ليس حساب مشرف أو غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مشرف.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "تعديل بيانات المشرف وكلمة المرور",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"مشرف العقارات الميداني\",\n    \"type\": \"real_estate_supervisor\",\n    \"phone\": \"0500000003\",\n    \"password\": \"\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors/2",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors",
+                                        "2"
+                                    ]
+                                },
+                                "description": "تعديل اسم المشرف ونوعه ورقم جواله، أو تحديث كلمة المرور (تركها فارغة للإبقاء على الحالية)."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حفظ تعديلات المشرف بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حفظ تعديلات المشرف بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"مشرف العقارات المحدث\",\n        \"username\": \"realestate_supervisor\",\n        \"phone\": \"0500000099\",\n        \"type\": \"real_estate_supervisor\",\n        \"type_label\": \"مشرف عقارات\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق من البيانات المدخلة",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"رقم الجوال مسجل مسبقاً لمستخدم آخر.\",\n    \"errors\": {\n        \"phone\": [\n            \"رقم الجوال مسجل مسبقاً لمستخدم آخر.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المشرف غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مشرف.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إيقاف / تفعيل حساب المشرف",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors/2/toggle-status",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors",
+                                        "2",
+                                        "toggle-status"
+                                    ]
+                                },
+                                "description": "تبديل حالة المشرف بين نشط وموقوف (مع منع المشرف العام من إيقاف حسابه الشخصي)."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم إيقاف حساب المشرف بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم إيقاف حساب المشرف بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"مشرف العقارات\",\n        \"is_active\": false\n    }\n}"
+                                },
+                                {
+                                    "name": "200 OK - تم تفعيل حساب المشرف بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم تفعيل حساب المشرف بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"مشرف العقارات\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - لا يمكن إيقاف الحساب الشخصي للمستخدم الحالي",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"لا يمكنك إيقاف أو حذف حسابك أنت.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "حذف حساب المشرف",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/supervisors/2",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "supervisors",
+                                        "2"
+                                    ]
+                                },
+                                "description": "حذف حساب المشرف من النظام (مع منع المشرف العام من حذف حسابه الشخصي)."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حذف حساب المشرف بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حذف حساب المشرف بنجاح.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - لا يمكن حذف الحساب الشخصي للمستخدم الحالي",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"لا يمكنك إيقاف أو حذف حسابك أنت.\"\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المشرف غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مشرف.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "المستخدمون والصلاحيات (المحصلون)",
+                    "description": "إدارة حسابات المحصلين: العرض مع إحصائيات المستأجرين والمبالغ المحصلة هذا الشهر، البحث بالاسم أو الجوال، إضافة محصل جديد، تعديل البيانات وكلمة المرور، وإيقاف الحساب أو حذفه.",
+                    "item": [
+                        {
+                            "name": "قائمة المحصلين والإحصائيات والبحث",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors?search=",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "search",
+                                            "value": "",
+                                            "description": "البحث بالاسم أو رقم الجوال أو اسم المستخدم"
+                                        },
+                                        {
+                                            "key": "is_active",
+                                            "value": "",
+                                            "description": "فلترة بالحالة (1 للنشط، 0 للموقوف)"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "عدد العناصر في الصفحة (اختياري للترقيم)"
+                                        }
+                                    ]
+                                },
+                                "description": "جلب قائمة المحصلين مع إحصائيات المستأجرين ومبالغ التحصيل الشهرية، وحالة النشاط، وتعداد تبويبات المستخدمين."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - قائمة المحصلين مع إحصائيات التحصيل",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم جلب قائمة المحصلين بنجاح.\",\n    \"data\": {\n        \"collectors\": [\n            {\n                \"id\": 6,\n                \"name\": \"المحصل الأول\",\n                \"username\": \"collector_1\",\n                \"email\": \"c1@tcms.sa\",\n                \"phone\": \"0511111111\",\n                \"national_id\": null,\n                \"type\": \"collector\",\n                \"type_label\": \"محصل\",\n                \"type_description\": \"تحصيل المستحقات وإرفاق السدادات ومتابعة المستأجرين وطلبات الإشعارات\",\n                \"is_active\": true,\n                \"tenants_count\": 12,\n                \"collected_this_month\": 45000,\n                \"target_this_month\": 60000,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:20:00+03:00\"\n            },\n            {\n                \"id\": 7,\n                \"name\": \"المحصل الثاني\",\n                \"username\": \"collector_2\",\n                \"email\": \"c2@tcms.sa\",\n                \"phone\": \"0522222222\",\n                \"national_id\": null,\n                \"type\": \"collector\",\n                \"type_label\": \"محصل\",\n                \"type_description\": \"تحصيل المستحقات وإرفاق السدادات ومتابعة المستأجرين وطلبات الإشعارات\",\n                \"is_active\": true,\n                \"tenants_count\": 8,\n                \"collected_this_month\": 20000,\n                \"target_this_month\": 40000,\n                \"properties_count\": null,\n                \"created_at\": \"2026-10-14T08:25:00+03:00\"\n            }\n        ],\n        \"statistics\": {\n            \"all_count\": 2,\n            \"active_count\": 2,\n            \"inactive_count\": 0\n        },\n        \"tabs_counts\": {\n            \"supervisors\": 4,\n            \"collectors\": 2,\n            \"owners\": 2\n        }\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إضافة محصل جديد",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"المحصل الجديد\",\n    \"phone\": \"0501234567\",\n    \"password\": \"1234\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors"
+                                    ]
+                                },
+                                "description": "إضافة حساب محصل جديد وتحديد الاسم ورقم الجوال وكلمة المرور (4 أحرف على الأقل)."
+                            },
+                            "response": [
+                                {
+                                    "name": "201 Created - تمت إضافة المحصل بنجاح",
+                                    "status": "Created",
+                                    "code": 201,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة المحصل بنجاح.\",\n    \"data\": {\n        \"id\": 8,\n        \"name\": \"المحصل الجديد\",\n        \"username\": \"collector_almuhassil_w3z9\",\n        \"email\": null,\n        \"phone\": \"0501234567\",\n        \"national_id\": null,\n        \"type\": \"collector\",\n        \"type_label\": \"محصل\",\n        \"type_description\": \"تحصيل المستحقات وإرفاق السدادات ومتابعة المستأجرين وطلبات الإشعارات\",\n        \"is_active\": true,\n        \"tenants_count\": 0,\n        \"collected_this_month\": 0,\n        \"target_this_month\": 0,\n        \"created_at\": \"2026-10-14T13:00:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق - كلمة المرور أقل من 4 أحرف أو الاسم مفقود",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"اسم المحصل مطلوب. (and 1 more error)\",\n    \"errors\": {\n        \"name\": [\n            \"اسم المحصل مطلوب.\"\n        ],\n        \"password\": [\n            \"يجب أن تتكون كلمة المرور من 4 أحرف على الأقل.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "عرض تفاصيل محصل محدد",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors/3",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors",
+                                        "3"
+                                    ]
+                                },
+                                "description": "عرض تفاصيل حساب المحصل وإحصائياته."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - بيانات المحصل المحدد",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"بيانات المحصل.\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"المحصل الأول\",\n        \"username\": \"collector_1\",\n        \"phone\": \"0511111111\",\n        \"type\": \"collector\",\n        \"type_label\": \"محصل\",\n        \"is_active\": true,\n        \"tenants_count\": 12,\n        \"collected_this_month\": 45000,\n        \"target_this_month\": 60000\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - المستخدم ليس حساب محصل أو غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب محصل.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "تعديل بيانات وكلمة مرور المحصل",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"المحصل المحدث\",\n    \"phone\": \"0509876543\",\n    \"password\": \"newpassword123\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors/3",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors",
+                                        "3"
+                                    ]
+                                },
+                                "description": "تعديل الاسم ورقم الجوال وتغيير كلمة المرور إن تم تمريرها."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حفظ تعديلات المحصل بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حفظ تعديلات المحصل بنجاح.\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"المحصل المحدث\",\n        \"username\": \"collector_1\",\n        \"phone\": \"0509876543\",\n        \"type\": \"collector\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق - رقم الجوال مسجل لمستخدم آخر",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"رقم الجوال مسجل مسبقاً لمستخدم آخر.\",\n    \"errors\": {\n        \"phone\": [\n            \"رقم الجوال مسجل مسبقاً لمستخدم آخر.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المحصل غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب محصل.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إيقاف أو تفعيل حساب المحصل",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors/3/toggle-status",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors",
+                                        "3",
+                                        "toggle-status"
+                                    ]
+                                },
+                                "description": "التبديل بين إيقاف الحساب وتفعيله."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم إيقاف حساب المحصل بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم إيقاف حساب المحصل بنجاح.\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"المحصل الأول\",\n        \"is_active\": false\n    }\n}"
+                                },
+                                {
+                                    "name": "200 OK - تم تفعيل حساب المحصل بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم تفعيل حساب المحصل بنجاح.\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"المحصل الأول\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - المستخدم ليس حساب محصل",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب محصل.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "حذف حساب محصل",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/collectors/3",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "collectors",
+                                        "3"
+                                    ]
+                                },
+                                "description": "حذف حساب المحصل مع حماية تمنع الحذف في حال وجود مستأجرين مرتبطين به في النظام."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حذف حساب المحصل بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حذف حساب المحصل بنجاح.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - لا يمكن حذف المحصل لوجود مستأجرين مرتبطين به في النظام",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"لا يمكن حذف المحصل لوجود مستأجرين مرتبطين به في النظام. يرجى إعادة تعيينهم أولاً.\"\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المحصل غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب محصل.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "المستخدمون والصلاحيات (الملاك)",
+                    "description": "إدارة حسابات الملاك: العرض مع إحصائيات العقارات والمستأجرين، البحث بالاسم أو الجوال أو رقم الهوية، إضافة مالك جديد (يدخل برقم الهوية)، تعديل البيانات وكلمة المرور، وإيقاف الحساب أو حذفه.",
+                    "item": [
+                        {
+                            "name": "قائمة الملاك والإحصائيات والبحث",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners?search=",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "search",
+                                            "value": "",
+                                            "description": "البحث بالاسم أو رقم الهوية أو رقم الجوال أو اسم المستخدم"
+                                        },
+                                        {
+                                            "key": "is_active",
+                                            "value": "",
+                                            "description": "فلترة بالحالة (1 للنشط، 0 للموقوف)"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "عدد العناصر في الصفحة (اختياري للترقيم)"
+                                        }
+                                    ]
+                                },
+                                "description": "جلب قائمة الملاك مع إحصائيات العقارات والمستأجرين وحالة النشاط وتعداد تبويبات المستخدمين."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - قائمة الملاك مع إحصائيات العقارات والمستأجرين",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم جلب قائمة الملاك بنجاح.\",\n    \"data\": {\n        \"owners\": [\n            {\n                \"id\": 9,\n                \"name\": \"المالك الأول\",\n                \"username\": \"owner_1000000001\",\n                \"email\": \"owner1@tcms.sa\",\n                \"phone\": \"0533333331\",\n                \"national_id\": \"1000000001\",\n                \"type\": \"owner\",\n                \"type_label\": \"مالك\",\n                \"type_description\": \"متابعة الوحدات والعقارات الخاصة والاطلاع على السدادات والملاحظات\",\n                \"is_active\": true,\n                \"properties_count\": 4,\n                \"tenants_count\": 15,\n                \"created_at\": \"2026-10-14T08:30:00+03:00\"\n            },\n            {\n                \"id\": 10,\n                \"name\": \"المالك الثاني\",\n                \"username\": \"owner_1000000002\",\n                \"email\": \"owner2@tcms.sa\",\n                \"phone\": \"0533333332\",\n                \"national_id\": \"1000000002\",\n                \"type\": \"owner\",\n                \"type_label\": \"مالك\",\n                \"type_description\": \"متابعة الوحدات والعقارات الخاصة والاطلاع على السدادات والملاحظات\",\n                \"is_active\": true,\n                \"properties_count\": 2,\n                \"tenants_count\": 6,\n                \"created_at\": \"2026-10-14T08:35:00+03:00\"\n            }\n        ],\n        \"statistics\": {\n            \"all_count\": 2,\n            \"active_count\": 2,\n            \"inactive_count\": 0\n        },\n        \"tabs_counts\": {\n            \"supervisors\": 4,\n            \"collectors\": 2,\n            \"owners\": 2\n        }\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إضافة مالك جديد",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"المالك الجديد\",\n    \"national_id\": \"1000000003\",\n    \"phone\": \"0507654321\",\n    \"password\": \"1234\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners"
+                                    ]
+                                },
+                                "description": "إضافة حساب مالك جديد مع رقم الهوية الوطنية (المستخدم في تسجيل الدخول) ورقم الجوال وكلمة المرور."
+                            },
+                            "response": [
+                                {
+                                    "name": "201 Created - تمت إضافة المالك بنجاح",
+                                    "status": "Created",
+                                    "code": 201,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة المالك بنجاح.\",\n    \"data\": {\n        \"id\": 11,\n        \"name\": \"المالك الجديد\",\n        \"username\": \"owner_1000000003\",\n        \"email\": null,\n        \"phone\": \"0507654321\",\n        \"national_id\": \"1000000003\",\n        \"type\": \"owner\",\n        \"type_label\": \"مالك\",\n        \"type_description\": \"متابعة الوحدات والعقارات الخاصة والاطلاع على السدادات والملاحظات\",\n        \"is_active\": true,\n        \"properties_count\": 0,\n        \"tenants_count\": 0,\n        \"created_at\": \"2026-10-14T13:30:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق - رقم الهوية إلزامي أو مسجل مسبقاً",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"رقم الهوية مطلوب (يُستخدم للدخول). (and 1 more error)\",\n    \"errors\": {\n        \"national_id\": [\n            \"رقم الهوية مسجل مسبقاً لمالك آخر.\"\n        ],\n        \"password\": [\n            \"يجب أن تتكون كلمة المرور من 4 أحرف على الأقل.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "عرض تفاصيل مالك محدد",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners/4",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners",
+                                        "4"
+                                    ]
+                                },
+                                "description": "عرض تفاصيل حساب المالك وإحصائياته."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - بيانات المالك المحدد",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"بيانات المالك.\",\n    \"data\": {\n        \"id\": 9,\n        \"name\": \"المالك الأول\",\n        \"username\": \"owner_1000000001\",\n        \"phone\": \"0533333331\",\n        \"national_id\": \"1000000001\",\n        \"type\": \"owner\",\n        \"type_label\": \"مالك\",\n        \"is_active\": true,\n        \"properties_count\": 4,\n        \"tenants_count\": 15\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - المستخدم ليس حساب مالك أو غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مالك.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "تعديل بيانات وكلمة مرور المالك",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"المالك المحدث\",\n    \"national_id\": \"1000000003\",\n    \"phone\": \"0507654322\",\n    \"password\": \"newpassword123\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners/4",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners",
+                                        "4"
+                                    ]
+                                },
+                                "description": "تعديل الاسم ورقم الهوية ورقم الجوال وتغيير كلمة المرور إن تم تمريرها."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حفظ تعديلات المالك بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حفظ تعديلات المالك بنجاح.\",\n    \"data\": {\n        \"id\": 9,\n        \"name\": \"المالك المحدث\",\n        \"national_id\": \"1000000001\",\n        \"phone\": \"0507654322\",\n        \"type\": \"owner\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - خطأ في التحقق - رقم الهوية مكرر لمالك آخر",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"رقم الهوية مسجل مسبقاً لمالك آخر.\",\n    \"errors\": {\n        \"national_id\": [\n            \"رقم الهوية مسجل مسبقاً لمالك آخر.\"\n        ]\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المالك غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مالك.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إيقاف أو تفعيل حساب المالك",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners/4/toggle-status",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners",
+                                        "4",
+                                        "toggle-status"
+                                    ]
+                                },
+                                "description": "التبديل بين إيقاف حساب المالك وتفعيله."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم إيقاف حساب المالك بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم إيقاف حساب المالك بنجاح.\",\n    \"data\": {\n        \"id\": 9,\n        \"name\": \"المالك الأول\",\n        \"is_active\": false\n    }\n}"
+                                },
+                                {
+                                    "name": "200 OK - تم تفعيل حساب المالك بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم تفعيل حساب المالك بنجاح.\",\n    \"data\": {\n        \"id\": 9,\n        \"name\": \"المالك الأول\",\n        \"is_active\": true\n    }\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - المستخدم ليس حساب مالك",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مالك.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "حذف حساب مالك",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/owners/4",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "owners",
+                                        "4"
+                                    ]
+                                },
+                                "description": "حذف حساب المالك مع التحقق من عدم وجود عقارات ومستأجرين مرتبطين به في النظام."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 OK - تم حذف حساب المالك بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حذف حساب المالك بنجاح.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "422 Unprocessable Content - لا يمكن حذف المالك لوجود عقارات ومستأجرين مرتبطين به في النظام",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"لا يمكن حذف المالك لوجود عقارات ومستأجرين مرتبطين به في النظام. يرجى إلغاء ربطهم أولاً.\"\n}"
+                                },
+                                {
+                                    "name": "404 Not Found - حساب المالك غير موجود",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"هذا المستخدم ليس حساب مالك.\"\n}"
+                                },
+                                {
+                                    "name": "401 Unauthorized - غير مصرح (رمز الدخول غير صالح أو مفقود)",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        }
+                    ]
+                },
                 {
                     "name": "1. تحميل قالب إكسل المستأجرين (Download Template)",
                     "request": {
@@ -375,7 +1756,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/import/template",
+                            "raw": "{{base_url}}/general-manager/tenants/import/template",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -453,7 +1834,7 @@
                             ]
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/import",
+                            "raw": "{{base_url}}/general-manager/tenants/import",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -529,7 +1910,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants?search=&collector_id=&period=2026-10&page=1&per_page=15",
+                            "raw": "{{base_url}}/general-manager/tenants?search=&collector_id=&period=2026-10&page=1&per_page=15",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -635,7 +2016,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants",
+                            "raw": "{{base_url}}/general-manager/tenants",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -710,7 +2091,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1?period=2026-10",
+                            "raw": "{{base_url}}/general-manager/tenants/1?period=2026-10",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -806,7 +2187,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1",
+                            "raw": "{{base_url}}/general-manager/tenants/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -895,7 +2276,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1",
+                            "raw": "{{base_url}}/general-manager/tenants/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -985,7 +2366,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/promises",
+                            "raw": "{{base_url}}/general-manager/tenants/1/promises",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1075,7 +2456,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/promises/5",
+                            "raw": "{{base_url}}/general-manager/tenants/1/promises/5",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1167,7 +2548,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/notes",
+                            "raw": "{{base_url}}/general-manager/tenants/1/notes",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1257,7 +2638,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/notes/6",
+                            "raw": "{{base_url}}/general-manager/tenants/1/notes/6",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1349,7 +2730,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/payments",
+                            "raw": "{{base_url}}/general-manager/tenants/1/payments",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1439,7 +2820,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/tenants/1/payments/10",
+                            "raw": "{{base_url}}/general-manager/tenants/1/payments/10",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1517,7 +2898,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals?tab=pending&search=&page=1&per_page=15",
+                            "raw": "{{base_url}}/general-manager/payments/approvals?tab=pending&search=&page=1&per_page=15",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1605,7 +2986,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals/1",
+                            "raw": "{{base_url}}/general-manager/payments/approvals/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1682,7 +3063,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals/1/approve",
+                            "raw": "{{base_url}}/general-manager/payments/approvals/1/approve",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1774,7 +3155,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals/1/reject",
+                            "raw": "{{base_url}}/general-manager/payments/approvals/1/reject",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1879,7 +3260,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals/1",
+                            "raw": "{{base_url}}/general-manager/payments/approvals/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1969,7 +3350,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/payments/approvals/1",
+                            "raw": "{{base_url}}/general-manager/payments/approvals/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2046,7 +3427,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/owner-payments?search=&owner_id=&period=2026-10&status=&page=1&per_page=15",
+                            "raw": "{{base_url}}/general-manager/owner-payments?search=&owner_id=&period=2026-10&status=&page=1&per_page=15",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2152,7 +3533,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/owner-payments/1/notes",
+                            "raw": "{{base_url}}/general-manager/owner-payments/1/notes",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2242,7 +3623,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/notice-requests?tab=new&search=&collector_id=&page=1&per_page=15",
+                            "raw": "{{base_url}}/general-manager/notice-requests?tab=new&search=&collector_id=&page=1&per_page=15",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2329,7 +3710,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/notice-requests/1",
+                            "raw": "{{base_url}}/general-manager/notice-requests/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2421,7 +3802,7 @@
                             ]
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/notice-requests/1/issue",
+                            "raw": "{{base_url}}/general-manager/notice-requests/1/issue",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2511,7 +3892,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/supervisor/notice-requests/1/approve-delivery",
+                            "raw": "{{base_url}}/general-manager/notice-requests/1/approve-delivery",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2615,7 +3996,7 @@
                             }
                         },
                         "url": {
-                            "raw": "{{base_url}}/supervisor/notice-requests/1/reject",
+                            "raw": "{{base_url}}/general-manager/notice-requests/1/reject",
                             "host": [
                                 "{{base_url}}"
                             ],

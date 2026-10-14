@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class SupervisorTenantApiTest extends TestCase
+class GeneralManagerTenantApiTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -24,7 +24,7 @@ class SupervisorTenantApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->supervisor = User::factory()->supervisor()->create();
+        $this->supervisor = User::factory()->generalManager()->create();
         $this->collector = User::factory()->collector()->create();
         $this->owner = User::factory()->owner()->create();
     }
@@ -62,7 +62,7 @@ class SupervisorTenantApiTest extends TestCase
 
         // Search test by name
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.tenants.index', ['search' => 'محمد']));
+            ->getJson(route('api.general-manager.tenants.index', ['search' => 'محمد']));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -72,7 +72,7 @@ class SupervisorTenantApiTest extends TestCase
 
         // Collector filter test
         $responseAll = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.tenants.index', ['collector_id' => $this->collector->id]));
+            ->getJson(route('api.general-manager.tenants.index', ['collector_id' => $this->collector->id]));
 
         $responseAll->assertOk()
             ->assertJsonCount(2, 'data.tenants');
@@ -95,7 +95,7 @@ class SupervisorTenantApiTest extends TestCase
         ];
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.store'), $payload);
+            ->postJson(route('api.general-manager.tenants.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('success', true)
@@ -148,7 +148,7 @@ class SupervisorTenantApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.tenants.show', $tenant));
+            ->getJson(route('api.general-manager.tenants.show', $tenant));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -176,7 +176,7 @@ class SupervisorTenantApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->putJson(route('api.supervisor.tenants.update', $tenant), [
+            ->putJson(route('api.general-manager.tenants.update', $tenant), [
                 'name' => 'محمد أحمد المعدل',
                 'monthly_target' => 1200,
             ]);
@@ -209,7 +209,7 @@ class SupervisorTenantApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.promises.store', $tenant), [
+            ->postJson(route('api.general-manager.tenants.promises.store', $tenant), [
                 'promise_date' => '2026-10-28',
                 'note' => 'تم الاتفاق على السداد يوم 28',
             ]);
@@ -241,7 +241,7 @@ class SupervisorTenantApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.notes.store', $tenant), [
+            ->postJson(route('api.general-manager.tenants.notes.store', $tenant), [
                 'content' => 'ملاحظة هامة: تم تغيير رقم الجوال البديل',
             ]);
 
@@ -274,7 +274,7 @@ class SupervisorTenantApiTest extends TestCase
         $currentPeriod = now()->format('Y-m');
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.tenants.payments.store', $tenant), [
+            ->postJson(route('api.general-manager.tenants.payments.store', $tenant), [
                 'amount' => 400,
                 'payment_date' => now()->format('Y-m-d'),
                 'payment_method' => 'تحويل بنكي',
@@ -288,7 +288,7 @@ class SupervisorTenantApiTest extends TestCase
 
         // Verify show tenant returns updated target progress
         $showResponse = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.tenants.show', $tenant));
+            ->getJson(route('api.general-manager.tenants.show', $tenant));
 
         $showResponse->assertOk()
             ->assertJsonPath('data.current_month_target.target_amount', 1000)

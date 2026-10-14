@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Supervisor;
+namespace App\Http\Requests\GeneralManager;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTenantNoteRequest extends FormRequest
+class StorePromiseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,8 @@ class StoreTenantNoteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['required', 'string', 'max:2000'],
+            'promise_date' => ['required', 'date'],
+            'note' => ['required', 'string', 'max:1000'],
         ];
     }
 
@@ -34,7 +35,9 @@ class StoreTenantNoteRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'content.required' => 'نص الملاحظة مطلوب.',
+            'promise_date.required' => 'تاريخ الموعد / الوعد مطلوب.',
+            'promise_date.date' => 'صيغة تاريخ الموعد غير صالحة.',
+            'note.required' => 'ملاحظة الوعد مطلوبة.',
         ];
     }
 }

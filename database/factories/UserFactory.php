@@ -59,12 +59,22 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user is a supervisor.
+     * Indicate that the user is a real estate supervisor.
      */
-    public function supervisor(): static
+    public function realEstateSupervisor(): static
     {
         return $this->state(fn (array $attributes): array => [
-            'type' => UserType::Supervisor,
+            'type' => UserType::RealEstateSupervisor,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a collection supervisor.
+     */
+    public function collectionSupervisor(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'type' => UserType::CollectionSupervisor,
         ]);
     }
 

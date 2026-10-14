@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\RejectPaymentRequest;
-use App\Http\Requests\Supervisor\UpdatePaymentRequest;
+use App\Http\Requests\GeneralManager\RejectPaymentRequest;
+use App\Http\Requests\GeneralManager\UpdatePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Support\ApiResponse;

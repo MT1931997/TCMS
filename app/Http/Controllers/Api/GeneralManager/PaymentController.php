@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StorePaymentRequest;
+use App\Http\Requests\GeneralManager\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Models\TenantInfo;

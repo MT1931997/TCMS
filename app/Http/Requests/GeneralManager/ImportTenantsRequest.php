@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Supervisor;
+namespace App\Http\Requests\GeneralManager;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RejectPaymentRequest extends FormRequest
+class ImportTenantsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,7 @@ class RejectPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rejection_reason' => ['required', 'string', 'max:1000'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ];
     }
 
@@ -34,9 +34,10 @@ class RejectPaymentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'rejection_reason.required' => 'يرجى ذكر سبب رفض السداد.',
-            'rejection_reason.string' => 'سبب الرفض يجب أن يكون نصاً صالحاً.',
-            'rejection_reason.max' => 'سبب الرفض يجب ألا يتجاوز 1000 حرف.',
+            'file.required' => 'يرجى اختيار ملف الإكسل المُراد رفعه.',
+            'file.file' => 'الملف المرفق غير صالح.',
+            'file.mimes' => 'يجب أن يكون الملف بصيغة إكسل (.xlsx أو .xls أو .csv).',
+            'file.max' => 'حجم الملف يجب ألا يتجاوز 10 ميجابايت.',
         ];
     }
 }

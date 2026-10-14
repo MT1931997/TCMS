@@ -11,6 +11,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
@@ -26,12 +27,18 @@ class AuthController extends Controller
         if (! empty($validated['user_id'])) {
             $user = User::find($validated['user_id']);
         } elseif (! empty($validated['login'])) {
-            $loginInput = $validated['login'];
+            $loginInput = trim((string) $validated['login']);
+            $baseName = Str::before($loginInput, ' – ');
+            $baseNameHyphen = Str::before($loginInput, ' - ');
+
             $user = User::query()
                 ->where('username', $loginInput)
+                ->orWhere('national_id', $loginInput)
                 ->orWhere('email', $loginInput)
                 ->orWhere('phone', $loginInput)
                 ->orWhere('name', $loginInput)
+                ->orWhere('name', $baseName)
+                ->orWhere('name', $baseNameHyphen)
                 ->first();
         }
 
@@ -40,12 +47,22 @@ class AuthController extends Controller
         }
 
         if (! empty($validated['type'])) {
-            $selectedType = UserType::tryFrom($validated['type']);
-            if ($selectedType && $user->type !== $selectedType) {
-                return ApiResponse::error(
-                    "هذا الحساب غير مسجل كـ {$selectedType->label()}.",
-                    403
-                );
+            $typeInput = $validated['type'];
+            if (in_array($typeInput, ['supervisor', 'supervisors'], true)) {
+                if (! $user->isSupervisorType()) {
+                    return ApiResponse::error(
+                        'هذا الحساب غير مسجل كحساب مشرف.',
+                        403
+                    );
+                }
+            } else {
+                $selectedType = UserType::tryFrom($typeInput);
+                if ($selectedType && $user->type !== $selectedType) {
+                    return ApiResponse::error(
+                        "هذا الحساب غير مسجل كـ {$selectedType->label()}.",
+                        403
+                    );
+                }
             }
         }
 
@@ -104,19 +121,47 @@ class AuthController extends Controller
      */
     public function usersByType(Request $request): JsonResponse
     {
+        $validTypes = array_merge(
+            array_map(fn (UserType $t): string => $t->value, UserType::cases()),
+            ['supervisor', 'supervisors']
+        );
+
         $request->validate([
-            'type' => ['required', 'string', Rule::enum(UserType::class)],
+            'type' => ['nullable', 'string', Rule::in($validTypes)],
         ], [
-            'type.required' => 'نوع المستخدم مطلوب.',
-            'type.enum' => 'نوع المستخدم المحدد غير صالح.',
+            'type.in' => 'نوع المستخدم المحدد غير صالح.',
         ]);
 
-        $users = User::query()
-            ->where('type', $request->query('type'))
-            ->where('is_active', true)
-            ->select(['id', 'name', 'username'])
-            ->orderBy('name')
-            ->get();
+        $type = $request->query('type');
+        $query = User::query()->where('is_active', true);
+
+        if (empty($type) || in_array($type, ['supervisor', 'supervisors'], true)) {
+            $supervisorValues = array_map(
+                fn (UserType $t): string => $t->value,
+                UserType::supervisorTypes()
+            );
+            $query->whereIn('type', $supervisorValues);
+        } else {
+            $query->where('type', $type);
+        }
+
+        $users = $query->orderBy('id')->get()->map(function (User $user): array {
+            $typeLabel = $user->type?->label() ?? '';
+            $displayName = $user->name.($typeLabel ? " – {$typeLabel}" : '');
+
+            return [
+                'id' => $user->id,
+                'value' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'type' => $user->type?->value ?? (string) $user->type,
+                'type_label' => $typeLabel,
+                'type_description' => $user->type?->description() ?? '',
+                'display_name' => $displayName,
+                'name_with_type' => $displayName,
+                'label' => $displayName,
+            ];
+        });
 
         return ApiResponse::success(
             $users,

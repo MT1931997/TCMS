@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'username', 'email', 'phone', 'type', 'is_active', 'password'])]
+#[Fillable(['name', 'username', 'email', 'phone', 'national_id', 'type', 'is_active', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,11 +52,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Determine if the user is a supervisor (مشرف).
+     * Determine if the user is a real estate supervisor (مشرف عقارات).
      */
-    public function isSupervisor(): bool
+    public function isRealEstateSupervisor(): bool
     {
-        return $this->type === UserType::Supervisor;
+        return $this->type === UserType::RealEstateSupervisor;
+    }
+
+    /**
+     * Determine if the user is a collection supervisor (مشرف تحصيل ومتابعة).
+     */
+    public function isCollectionSupervisor(): bool
+    {
+        return $this->type === UserType::CollectionSupervisor;
     }
 
     /**
@@ -73,6 +81,14 @@ class User extends Authenticatable
     public function isMaintenanceSupervisor(): bool
     {
         return $this->type === UserType::MaintenanceSupervisor;
+    }
+
+    /**
+     * Determine if the user belongs to any supervisor category.
+     */
+    public function isSupervisorType(): bool
+    {
+        return $this->type?->isSupervisorType() ?? false;
     }
 
     /**
@@ -97,5 +113,29 @@ class User extends Authenticatable
     public function noticeRequests(): HasMany
     {
         return $this->hasMany(NoticeRequest::class, 'collector_id');
+    }
+
+    /**
+     * Tenants assigned to this collector.
+     */
+    public function collectedTenants(): HasMany
+    {
+        return $this->hasMany(TenantInfo::class, 'collector_id');
+    }
+
+    /**
+     * Payments recorded by this collector.
+     */
+    public function collectorPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'collector_id');
+    }
+
+    /**
+     * Tenants/properties owned by this owner.
+     */
+    public function ownedTenants(): HasMany
+    {
+        return $this->hasMany(TenantInfo::class, 'owner_id');
     }
 }

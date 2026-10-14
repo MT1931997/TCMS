@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Supervisor;
+namespace App\Http\Requests\GeneralManager;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RejectNoticeRequest extends FormRequest
+class StoreTenantNoteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -17,25 +17,24 @@ class RejectNoticeRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
-            'rejection_reason' => ['required', 'string', 'max:1000'],
+            'content' => ['required', 'string', 'max:2000'],
         ];
     }
 
     /**
-     * Custom validation error messages in Arabic.
+     * Custom validation messages in Arabic.
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'rejection_reason.required' => 'يرجى ذكر سبب الرفض.',
-            'rejection_reason.max' => 'سبب الرفض يجب ألا يتجاوز 1000 حرف.',
+            'content.required' => 'نص الملاحظة مطلوب.',
         ];
     }
 }

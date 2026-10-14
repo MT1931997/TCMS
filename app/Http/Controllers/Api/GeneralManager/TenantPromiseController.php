@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StorePromiseRequest;
+use App\Http\Requests\GeneralManager\StorePromiseRequest;
 use App\Http\Resources\TenantPromiseResource;
 use App\Models\TenantInfo;
 use App\Models\TenantPromise;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\ImportTenantsRequest;
+use App\Http\Requests\GeneralManager\ImportTenantsRequest;
 use App\Services\TenantImportService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;

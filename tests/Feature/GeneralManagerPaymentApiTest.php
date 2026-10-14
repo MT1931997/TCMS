@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class SupervisorPaymentApiTest extends TestCase
+class GeneralManagerPaymentApiTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -26,7 +26,7 @@ class SupervisorPaymentApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->supervisor = User::factory()->supervisor()->create(['name' => 'المشرف الأول']);
+        $this->supervisor = User::factory()->generalManager()->create(['name' => 'المشرف الأول']);
         $this->collector = User::factory()->collector()->create(['name' => 'المحصل الأول']);
         $this->owner = User::factory()->owner()->create(['name' => 'المالك الأول']);
 
@@ -61,7 +61,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_view_payment_approvals_with_pending_tab_and_counters(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.payments.approvals.index', ['tab' => 'pending']));
+            ->getJson(route('api.general-manager.payments.approvals.index', ['tab' => 'pending']));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -88,7 +88,7 @@ class SupervisorPaymentApiTest extends TestCase
         ]);
 
         $pendingResponse = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.payments.approvals.index', ['tab' => 'pending']));
+            ->getJson(route('api.general-manager.payments.approvals.index', ['tab' => 'pending']));
 
         $pendingResponse->assertOk()
             ->assertJsonCount(1, 'data.payments')
@@ -96,7 +96,7 @@ class SupervisorPaymentApiTest extends TestCase
             ->assertJsonPath('data.tabs.all_count', 2);
 
         $allResponse = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.payments.approvals.index', ['tab' => 'all']));
+            ->getJson(route('api.general-manager.payments.approvals.index', ['tab' => 'all']));
 
         $allResponse->assertOk()
             ->assertJsonCount(2, 'data.payments');
@@ -105,14 +105,14 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_search_payments_in_approvals(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.payments.approvals.index', ['search' => '12121']));
+            ->getJson(route('api.general-manager.payments.approvals.index', ['search' => '12121']));
 
         $response->assertOk()
             ->assertJsonCount(1, 'data.payments')
             ->assertJsonPath('data.payments.0.receipt_number', '12121');
 
         $emptyResponse = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.payments.approvals.index', ['search' => 'غير موجود']));
+            ->getJson(route('api.general-manager.payments.approvals.index', ['search' => 'غير موجود']));
 
         $emptyResponse->assertOk()
             ->assertJsonCount(0, 'data.payments');
@@ -121,7 +121,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_approve_payment(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.payments.approvals.approve', $this->payment));
+            ->postJson(route('api.general-manager.payments.approvals.approve', $this->payment));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -141,7 +141,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_cannot_reject_without_reason(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.payments.approvals.reject', $this->payment), []);
+            ->postJson(route('api.general-manager.payments.approvals.reject', $this->payment), []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['rejection_reason']);
@@ -150,7 +150,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_reject_payment_with_reason(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.payments.approvals.reject', $this->payment), [
+            ->postJson(route('api.general-manager.payments.approvals.reject', $this->payment), [
                 'rejection_reason' => 'رقم الإيصال غير مطابق للحساب البنكي',
             ]);
 
@@ -173,7 +173,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_update_payment_details_from_modal(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->putJson(route('api.supervisor.payments.approvals.update', $this->payment), [
+            ->putJson(route('api.general-manager.payments.approvals.update', $this->payment), [
                 'amount' => 600,
                 'period' => '2026-11',
                 'payment_method' => 'تحويل بنكي',
@@ -201,7 +201,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_delete_payment(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->deleteJson(route('api.supervisor.payments.approvals.destroy', $this->payment));
+            ->deleteJson(route('api.general-manager.payments.approvals.destroy', $this->payment));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -215,7 +215,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_view_owner_payments_سدادات_الملاك(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->getJson(route('api.supervisor.owner-payments.index'));
+            ->getJson(route('api.general-manager.owner-payments.index'));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -233,7 +233,7 @@ class SupervisorPaymentApiTest extends TestCase
     public function test_supervisor_can_update_owner_payment_comments(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->putJson(route('api.supervisor.owner-payments.notes.update', $this->payment), [
+            ->putJson(route('api.general-manager.owner-payments.notes.update', $this->payment), [
                 'notes' => 'تم استلام الحوالة من قبل المالك مباشرة',
             ]);
 

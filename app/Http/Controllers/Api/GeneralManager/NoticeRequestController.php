@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\NoticeRequestStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\IssueNoticeRequest;
-use App\Http\Requests\Supervisor\RejectNoticeRequest;
+use App\Http\Requests\GeneralManager\IssueNoticeRequest;
+use App\Http\Requests\GeneralManager\RejectNoticeRequest;
 use App\Http\Resources\NoticeRequestResource;
 use App\Models\NoticeRequest;
 use App\Support\ApiResponse;

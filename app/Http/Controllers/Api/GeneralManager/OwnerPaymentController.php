@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;

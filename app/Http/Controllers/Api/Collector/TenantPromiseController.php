@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Collector;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StorePromiseRequest;
+use App\Http\Requests\GeneralManager\StorePromiseRequest;
 use App\Http\Resources\TenantPromiseResource;
 use App\Models\TenantInfo;
 use App\Support\ApiResponse;

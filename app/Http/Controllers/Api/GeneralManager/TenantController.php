@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StoreTenantRequest;
-use App\Http\Requests\Supervisor\UpdateTenantRequest;
+use App\Http\Requests\GeneralManager\StoreTenantRequest;
+use App\Http\Requests\GeneralManager\UpdateTenantRequest;
 use App\Http\Resources\TenantDetailResource;
 use App\Http\Resources\TenantListResource;
 use App\Models\TenantInfo;

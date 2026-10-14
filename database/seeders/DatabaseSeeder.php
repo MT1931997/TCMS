@@ -25,11 +25,38 @@ class DatabaseSeeder extends Seeder
         // 1. حسابات رئيسية ثابتة ومحددة لتسهيل تسجيل الدخول
         $fixedUsers = [
             [
-                'name' => 'المشرف الثاني (مشرف نظام)',
+                'name' => 'المشرف العام',
                 'username' => 'admin',
                 'phone' => '0500000001',
                 'email' => 'admin@tcms.sa',
                 'type' => UserType::GeneralManager,
+                'is_active' => true,
+                'password' => $defaultPassword,
+            ],
+            [
+                'name' => 'مشرف العقارات',
+                'username' => 'realestate_supervisor',
+                'phone' => '0500000003',
+                'email' => 'realestate@tcms.sa',
+                'type' => UserType::RealEstateSupervisor,
+                'is_active' => true,
+                'password' => $defaultPassword,
+            ],
+            [
+                'name' => 'مشرف التحصيل والمتابعة',
+                'username' => 'collection_supervisor',
+                'phone' => '0500000006',
+                'email' => 'collection_mgr@tcms.sa',
+                'type' => UserType::CollectionSupervisor,
+                'is_active' => true,
+                'password' => $defaultPassword,
+            ],
+            [
+                'name' => 'مشرف الصيانة',
+                'username' => 'maint1',
+                'phone' => '0500000005',
+                'email' => 'maintenance@tcms.sa',
+                'type' => UserType::MaintenanceSupervisor,
                 'is_active' => true,
                 'password' => $defaultPassword,
             ],
@@ -43,29 +70,11 @@ class DatabaseSeeder extends Seeder
                 'password' => $defaultPassword,
             ],
             [
-                'name' => 'أحمد العتيبي (مشرف)',
-                'username' => 'supervisor1',
-                'phone' => '0500000003',
-                'email' => 'supervisor@tcms.sa',
-                'type' => UserType::Supervisor,
-                'is_active' => true,
-                'password' => $defaultPassword,
-            ],
-            [
                 'name' => 'المحصل الأول',
                 'username' => 'collector1',
                 'phone' => '0500000004',
                 'email' => 'collector@tcms.sa',
                 'type' => UserType::Collector,
-                'is_active' => true,
-                'password' => $defaultPassword,
-            ],
-            [
-                'name' => 'عمر مهندس الصيانة (مشرف صيانة)',
-                'username' => 'maint1',
-                'phone' => '0500000005',
-                'email' => 'maintenance@tcms.sa',
-                'type' => UserType::MaintenanceSupervisor,
                 'is_active' => true,
                 'password' => $defaultPassword,
             ],
@@ -79,11 +88,12 @@ class DatabaseSeeder extends Seeder
         }
 
         // توليد مستخدمين إضافيين
-        User::factory()->count(3)->supervisor()->create(['password' => $defaultPassword]);
+        User::factory()->count(2)->realEstateSupervisor()->create(['password' => $defaultPassword]);
+        User::factory()->count(2)->collectionSupervisor()->create(['password' => $defaultPassword]);
         User::factory()->count(4)->collector()->create(['password' => $defaultPassword]);
         User::factory()->count(2)->owner()->create(['password' => $defaultPassword]);
 
-        $supervisor = User::where('username', 'supervisor1')->first();
+        $generalManager = User::where('username', 'admin')->first();
         $collector = User::where('username', 'collector1')->first();
         $owner = User::where('username', 'owner')->first();
 
@@ -110,7 +120,7 @@ class DatabaseSeeder extends Seeder
                 'monthly_target' => 1000.00,
                 'collector_id' => $collector->id,
                 'owner_id' => $owner->id,
-                'supervisor_id' => $supervisor->id,
+                'supervisor_id' => $generalManager->id,
                 'national_id' => '124578963654',
                 'birth_date' => '1997-03-19',
                 'notes' => 'مستأجر منتظم بالدفع الشهري',
@@ -121,14 +131,14 @@ class DatabaseSeeder extends Seeder
         // إضافة ملاحظات تجريبية للمستأجر
         TenantNote::create([
             'tenant_id' => $demoTenant->id,
-            'user_id' => $supervisor->id,
+            'user_id' => $generalManager->id,
             'content' => 'تم التواصل مع المستأجر بخصوص موعد الاستحقاق القادم.',
         ]);
 
         // إضافة موعد/وعد تجريبي
         TenantPromise::create([
             'tenant_id' => $demoTenant->id,
-            'user_id' => $supervisor->id,
+            'user_id' => $generalManager->id,
             'promise_date' => '2026-10-25',
             'note' => 'وعد بسداد القسط قبل نهاية الشهر عبر التحويل البنكي',
             'status' => 'pending',
@@ -147,14 +157,14 @@ class DatabaseSeeder extends Seeder
                 'due_date' => now()->addDays($i * 3)->format('Y-m-d'),
                 'monthly_target' => 1000 + ($i * 200),
                 'collector_id' => $collector->id,
-                'supervisor_id' => $supervisor->id,
+                'supervisor_id' => $generalManager->id,
                 'owner_id' => $owner->id,
                 'status' => 'regular',
             ]);
 
             TenantNote::create([
                 'tenant_id' => $ti->id,
-                'user_id' => $supervisor->id,
+                'user_id' => $generalManager->id,
                 'content' => 'ملاحظة أولية عند تسجيل المستأجر.',
             ]);
         }

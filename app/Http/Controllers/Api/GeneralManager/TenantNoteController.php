@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\Supervisor;
+namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\StoreTenantNoteRequest;
+use App\Http\Requests\GeneralManager\StoreTenantNoteRequest;
 use App\Http\Resources\TenantNoteResource;
 use App\Models\TenantInfo;
 use App\Models\TenantNote;

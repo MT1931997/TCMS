@@ -31,7 +31,7 @@ class NoticeRequestApiTest extends TestCase
 
         Storage::fake('public');
 
-        $this->supervisor = User::factory()->supervisor()->create(['name' => 'المشرف العام']);
+        $this->supervisor = User::factory()->generalManager()->create(['name' => 'المشرف العام']);
         $this->collector = User::factory()->collector()->create(['name' => 'المحصل الأول']);
         $this->otherCollector = User::factory()->collector()->create(['name' => 'المحصل الثاني']);
 
@@ -133,7 +133,7 @@ class NoticeRequestApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.notice-requests.issue', $noticeRequest), [
+            ->postJson(route('api.general-manager.notice-requests.issue', $noticeRequest), [
                 'notice_content' => 'نص الإشعار الرسمي: يرجى السداد خلال 48 ساعة تفادياً للإجراءات النظامية.',
             ]);
 
@@ -197,7 +197,7 @@ class NoticeRequestApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.notice-requests.approve-delivery', $noticeRequest));
+            ->postJson(route('api.general-manager.notice-requests.approve-delivery', $noticeRequest));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -220,7 +220,7 @@ class NoticeRequestApiTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->supervisor, 'sanctum')
-            ->postJson(route('api.supervisor.notice-requests.reject', $noticeRequest), [
+            ->postJson(route('api.general-manager.notice-requests.reject', $noticeRequest), [
                 'rejection_reason' => 'المستأجر لديه وعد سداد قائم ينتهي غداً، يرجى الانتظار.',
             ]);
 
