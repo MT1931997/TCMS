@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\GeneralManager\CollectorManagementController;
+use App\Http\Controllers\Api\GeneralManager\MaintenanceRequestController;
+use App\Http\Controllers\Api\GeneralManager\MaintenanceWorkController;
 use App\Http\Controllers\Api\GeneralManager\NoticeRequestController;
 use App\Http\Controllers\Api\GeneralManager\OwnerManagementController;
 use App\Http\Controllers\Api\GeneralManager\OwnerPaymentController;
@@ -77,3 +79,15 @@ Route::get('notice-requests/{noticeRequest}', [NoticeRequestController::class, '
 Route::post('notice-requests/{noticeRequest}/issue', [NoticeRequestController::class, 'issue'])->name('api.general-manager.notice-requests.issue');
 Route::post('notice-requests/{noticeRequest}/approve-delivery', [NoticeRequestController::class, 'approveDelivery'])->name('api.general-manager.notice-requests.approve-delivery');
 Route::post('notice-requests/{noticeRequest}/reject', [NoticeRequestController::class, 'reject'])->name('api.general-manager.notice-requests.reject');
+
+// طلبات صيانة المستأجرين (إدارة واعتماد ورفض وتعديل وحذف طلبات الصيانة)
+Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('api.general-manager.maintenance-requests.index');
+Route::get('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'show'])->name('api.general-manager.maintenance-requests.show');
+Route::post('maintenance-requests/{maintenanceRequest}/approve', [MaintenanceRequestController::class, 'approve'])->name('api.general-manager.maintenance-requests.approve');
+Route::post('maintenance-requests/{maintenanceRequest}/reject', [MaintenanceRequestController::class, 'reject'])->name('api.general-manager.maintenance-requests.reject');
+Route::put('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'update'])->name('api.general-manager.maintenance-requests.update');
+Route::delete('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'destroy'])->name('api.general-manager.maintenance-requests.destroy');
+
+// أعمال الصيانة (التقارير المرسلة، إرسال تقرير صيانة جديد، تفاصيل، تعديل، حذف، وتصدير الصيانة المعتمدة)
+Route::get('maintenance-works/export-pdf', [MaintenanceWorkController::class, 'exportPdf'])->name('api.general-manager.maintenance-works.export-pdf');
+Route::apiResource('maintenance-works', MaintenanceWorkController::class)->names('api.general-manager.maintenance-works');

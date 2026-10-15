@@ -138,4 +138,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(TenantInfo::class, 'owner_id');
     }
+
+    /**
+     * Maintenance requests assigned/linked to this owner.
+     */
+    public function ownedMaintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'owner_id');
+    }
+
+    /**
+     * Maintenance requests reviewed by this user.
+     */
+    public function reviewedMaintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'reviewed_by');
+    }
 }

@@ -109,6 +109,14 @@ class TenantInfo extends Model
     }
 
     /**
+     * Maintenance requests recorded for this tenant.
+     */
+    public function maintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'tenant_id')->latest();
+    }
+
+    /**
      * Calculate total paid amount for a specific period (e.g. 2026-10).
      */
     public function paidForPeriod(string $period): float

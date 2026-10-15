@@ -6,9 +6,14 @@ use App\Http\Controllers\Api\Collector\PaymentController as CollectorPaymentCont
 use App\Http\Controllers\Api\Collector\TenantController as CollectorTenantController;
 use App\Http\Controllers\Api\Collector\TenantNoteController as CollectorTenantNoteController;
 use App\Http\Controllers\Api\Collector\TenantPromiseController as CollectorTenantPromiseController;
+use App\Http\Controllers\Api\MaintenanceSupervisor\MaintenanceRequestController as MaintenanceSupervisorRequestController;
+use App\Http\Controllers\Api\MaintenanceSupervisor\MaintenanceWorkController as MaintenanceSupervisorWorkController;
+use App\Http\Controllers\Api\Owner\MaintenanceRequestController as OwnerMaintenanceRequestController;
+use App\Http\Controllers\Api\Owner\MaintenanceWorkController as OwnerMaintenanceWorkController;
 use App\Http\Controllers\Api\Owner\OverviewController as OwnerOverviewController;
 use App\Http\Controllers\Api\Owner\PaymentController as OwnerPortalPaymentController;
 use App\Http\Controllers\Api\Owner\PropertyController as OwnerPropertyController;
+use App\Http\Controllers\Api\Tenant\MaintenanceRequestController as TenantMaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes (المصادقة)
@@ -22,6 +27,13 @@ Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me'])->name('api.auth.me');
         Route::post('logout', [AuthController::class, 'logout'])->name('api.auth.logout');
     });
+});
+
+// Tenant Maintenance Routes (بوابة وطلبات صيانة المستأجر)
+Route::prefix('tenant/maintenance-requests')->group(function () {
+    Route::post('/', [TenantMaintenanceRequestController::class, 'store'])->name('api.tenant.maintenance-requests.store');
+    Route::get('track', [TenantMaintenanceRequestController::class, 'track'])->name('api.tenant.maintenance-requests.track');
+    Route::get('{ticketNumber}', [TenantMaintenanceRequestController::class, 'show'])->name('api.tenant.maintenance-requests.show');
 });
 
 // General Manager Module Routes (موديول المشرف العام)
@@ -65,4 +77,34 @@ Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
 
     // إدارة أملاكي
     Route::get('properties', [OwnerPropertyController::class, 'index'])->name('api.owner.properties.index');
+
+    // أعمال وطلبات الصيانة (طلبات الصيانة المحولة وسجل القرارات)
+    Route::get('maintenance-requests', [OwnerMaintenanceRequestController::class, 'index'])->name('api.owner.maintenance-requests.index');
+    Route::get('maintenance-requests/{maintenanceRequest}', [OwnerMaintenanceRequestController::class, 'show'])->name('api.owner.maintenance-requests.show');
+    Route::post('maintenance-requests/{maintenanceRequest}/approve', [OwnerMaintenanceRequestController::class, 'approve'])->name('api.owner.maintenance-requests.approve');
+    Route::post('maintenance-requests/{maintenanceRequest}/reject', [OwnerMaintenanceRequestController::class, 'reject'])->name('api.owner.maintenance-requests.reject');
+
+    // أعمال الصيانة (بانتظار قراركم، سجل القرارات، قبول الصيانة، رفض الصيانة، قيّم جودة الصيانة، وتصدير الصيانة المعتمدة)
+    Route::get('maintenance-works/export-approved-pdf', [OwnerMaintenanceWorkController::class, 'exportApprovedPdf'])->name('api.owner.maintenance-works.export-approved-pdf');
+    Route::get('maintenance-works', [OwnerMaintenanceWorkController::class, 'index'])->name('api.owner.maintenance-works.index');
+    Route::get('maintenance-works/{maintenanceWork}', [OwnerMaintenanceWorkController::class, 'show'])->name('api.owner.maintenance-works.show');
+    Route::post('maintenance-works/{maintenanceWork}/approve', [OwnerMaintenanceWorkController::class, 'approve'])->name('api.owner.maintenance-works.approve');
+    Route::post('maintenance-works/{maintenanceWork}/reject', [OwnerMaintenanceWorkController::class, 'reject'])->name('api.owner.maintenance-works.reject');
+    Route::post('maintenance-works/{maintenanceWork}/rate', [OwnerMaintenanceWorkController::class, 'rate'])->name('api.owner.maintenance-works.rate');
+    Route::get('maintenance-works/{maintenanceWork}/pdf', [OwnerMaintenanceWorkController::class, 'pdf'])->name('api.owner.maintenance-works.pdf');
+});
+
+// Maintenance Supervisor Module Routes (موديول مشرف الصيانة)
+Route::middleware('auth:sanctum')->prefix('maintenance-supervisor')->group(function () {
+    // طلبات صيانة المستأجرين (إدارة واعتماد ورفض وتعديل وحذف طلبات الصيانة)
+    Route::get('maintenance-requests', [MaintenanceSupervisorRequestController::class, 'index'])->name('api.maintenance-supervisor.maintenance-requests.index');
+    Route::get('maintenance-requests/{maintenanceRequest}', [MaintenanceSupervisorRequestController::class, 'show'])->name('api.maintenance-supervisor.maintenance-requests.show');
+    Route::post('maintenance-requests/{maintenanceRequest}/approve', [MaintenanceSupervisorRequestController::class, 'approve'])->name('api.maintenance-supervisor.maintenance-requests.approve');
+    Route::post('maintenance-requests/{maintenanceRequest}/reject', [MaintenanceSupervisorRequestController::class, 'reject'])->name('api.maintenance-supervisor.maintenance-requests.reject');
+    Route::put('maintenance-requests/{maintenanceRequest}', [MaintenanceSupervisorRequestController::class, 'update'])->name('api.maintenance-supervisor.maintenance-requests.update');
+    Route::delete('maintenance-requests/{maintenanceRequest}', [MaintenanceSupervisorRequestController::class, 'destroy'])->name('api.maintenance-supervisor.maintenance-requests.destroy');
+
+    // أعمال الصيانة (التقارير المرسلة، إرسال تقرير صيانة جديد، تفاصيل، تعديل، حذف، وتصدير الصيانة المعتمدة)
+    Route::get('maintenance-works/export-pdf', [MaintenanceSupervisorWorkController::class, 'exportPdf'])->name('api.maintenance-supervisor.maintenance-works.export-pdf');
+    Route::apiResource('maintenance-works', MaintenanceSupervisorWorkController::class)->names('api.maintenance-supervisor.maintenance-works');
 });
