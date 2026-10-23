@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'user_id',
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'monthly_target',
     'collector_id',
     'owner_id',
+    'property_id',
     'supervisor_id',
     'national_id',
     'birth_date',
@@ -66,6 +68,30 @@ class TenantInfo extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * The property/building this unit belongs to (optional).
+     */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class, 'property_id');
+    }
+
+    /**
+     * Contracts registered for this tenant.
+     */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class, 'tenant_id');
+    }
+
+    /**
+     * Currently active contract for this tenant.
+     */
+    public function activeContract(): HasOne
+    {
+        return $this->hasOne(Contract::class, 'tenant_id')->where('status', 'active');
     }
 
     /**

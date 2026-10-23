@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Owner\MaintenanceWorkController as OwnerMaintenance
 use App\Http\Controllers\Api\Owner\OverviewController as OwnerOverviewController;
 use App\Http\Controllers\Api\Owner\PaymentController as OwnerPortalPaymentController;
 use App\Http\Controllers\Api\Owner\PropertyController as OwnerPropertyController;
+use App\Http\Controllers\Api\RealEstateSupervisor\PropertyController as RealEstateSupervisorPropertyController;
 use App\Http\Controllers\Api\Tenant\MaintenanceRequestController as TenantMaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -107,4 +108,15 @@ Route::middleware('auth:sanctum')->prefix('maintenance-supervisor')->group(funct
     // أعمال الصيانة (التقارير المرسلة، إرسال تقرير صيانة جديد، تفاصيل، تعديل، حذف، وتصدير الصيانة المعتمدة)
     Route::get('maintenance-works/export-pdf', [MaintenanceSupervisorWorkController::class, 'exportPdf'])->name('api.maintenance-supervisor.maintenance-works.export-pdf');
     Route::apiResource('maintenance-works', MaintenanceSupervisorWorkController::class)->names('api.maintenance-supervisor.maintenance-works');
+});
+
+// Real Estate Supervisor Module Routes (موديول مشرف العقارات)
+Route::middleware('auth:sanctum')->prefix('real-estate-supervisor')->group(function () {
+    // إدارة الأملاك والعقود (العقارات)
+    Route::get('properties/{property}/contracts/options', [RealEstateSupervisorPropertyController::class, 'contractOptions'])->name('api.real-estate-supervisor.properties.contracts.options');
+    Route::post('properties/{property}/contracts', [RealEstateSupervisorPropertyController::class, 'storeContract'])->name('api.real-estate-supervisor.properties.contracts.store');
+    Route::put('properties/{property}/contracts/{contract}', [RealEstateSupervisorPropertyController::class, 'updateContract'])->name('api.real-estate-supervisor.properties.contracts.update');
+    Route::post('properties/{property}/contracts/{contract}/terminate', [RealEstateSupervisorPropertyController::class, 'terminateContract'])->name('api.real-estate-supervisor.properties.contracts.terminate');
+    Route::post('properties/{property}/contracts/{contract}/renew', [RealEstateSupervisorPropertyController::class, 'renewContract'])->name('api.real-estate-supervisor.properties.contracts.renew');
+    Route::apiResource('properties', RealEstateSupervisorPropertyController::class)->names('api.real-estate-supervisor.properties');
 });

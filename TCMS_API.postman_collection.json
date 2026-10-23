@@ -5193,6 +5193,676 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "name": "إدارة الأملاك والعقود (Properties & Contracts Management)",
+                    "item": [
+                        {
+                            "name": "1. عرض قائمة العقارات والإحصائيات (Index Properties)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/properties?search=&owner_id=&period=2026-10",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "properties"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "search",
+                                            "value": "",
+                                            "description": "بحث باسم العقار أو الموقع أو المالك"
+                                        },
+                                        {
+                                            "key": "owner_id",
+                                            "value": "",
+                                            "description": "فلترة بمالك محدد من قائمة الملاك"
+                                        },
+                                        {
+                                            "key": "period",
+                                            "value": "2026-10",
+                                            "description": "الشهر المطلوب لحساب المبالغ المحصلة (صيغة YYYY-MM)"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "15",
+                                            "description": "عدد العقارات في الصفحة (اختياري، افتراضياً بدون تقسيم أو حسب المحدد)",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "شاشة 'إدارة الأملاك والعقود': تعرض جميع العقارات في كروت مع إحصائيات العقود السارية، المحصل هذا الشهر، والمبالغ المتأخرة، بالإضافة لخيار البحث والفلترة حسب المالك."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - قائمة العقارات والإحصائيات",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم جلب قائمة العقارات بنجاح.\",\n    \"data\": {\n        \"properties\": [\n            {\n                \"id\": 1,\n                \"name\": \"تيست\",\n                \"location\": \"الرياض - حي النرجس\",\n                \"owner_id\": 5,\n                \"owner_name\": \"المالك الأول - تيست\",\n                \"owner\": {\n                    \"id\": 5,\n                    \"name\": \"المالك الأول - تيست\",\n                    \"username\": \"owner\",\n                    \"phone\": \"0500000002\",\n                    \"email\": \"owner@tcms.sa\"\n                },\n                \"units_count\": 2,\n                \"active_contracts_count\": 2,\n                \"collected_this_month\": 0,\n                \"collected_this_month_formatted\": \"0 ر.س\",\n                \"overdue_amount\": 1833,\n                \"overdue_amount_formatted\": \"1,833 ر.س\",\n                \"created_at\": \"2026-10-21T08:00:00+03:00\",\n                \"updated_at\": \"2026-10-21T08:00:00+03:00\"\n            },\n            {\n                \"id\": 2,\n                \"name\": \"mmm\",\n                \"location\": \"جدة - حي الروضة\",\n                \"owner_id\": 5,\n                \"owner_name\": \"المالك الأول - mmm\",\n                \"owner\": {\n                    \"id\": 5,\n                    \"name\": \"المالك الأول - mmm\",\n                    \"username\": \"owner\",\n                    \"phone\": \"0500000002\",\n                    \"email\": \"owner@tcms.sa\"\n                },\n                \"units_count\": 0,\n                \"active_contracts_count\": 0,\n                \"collected_this_month\": 0,\n                \"collected_this_month_formatted\": \"0 ر.س\",\n                \"overdue_amount\": 0,\n                \"overdue_amount_formatted\": \"0 ر.س\",\n                \"created_at\": \"2026-10-21T08:30:00+03:00\",\n                \"updated_at\": \"2026-10-21T08:30:00+03:00\"\n            }\n        ],\n        \"statistics\": {\n            \"properties_count\": 2,\n            \"active_contracts_count\": 2,\n            \"subtitle\": \"2 عقار . 2 عقد ساري - اضغط على أي عقار للدخول إليه وإدارة عقوده ووحداته\"\n        },\n        \"owners\": [\n            {\n                \"id\": 5,\n                \"name\": \"المالك الأول - تيست\"\n            },\n            {\n                \"id\": 6,\n                \"name\": \"عبدالله بن عبدالعزيز الراجحي\"\n            }\n        ]\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "2. إضافة عقار جديد (Store Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"owner_id\": 5,\n    \"name\": \"برج الأمل\",\n    \"location\": \"الرياض - حي النرجس\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/properties",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "properties"
+                                    ]
+                                },
+                                "description": "نافذة إضافة عقار جديد: يتم اختيار المالك من القائمة المنسدلة، وكتابة اسم العقار، والموقع/الحي اختيارياً."
+                            },
+                            "response": [
+                                {
+                                    "name": "201 Created - تمت إضافة العقار بنجاح",
+                                    "status": "Created",
+                                    "code": 201,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقار بنجاح.\",\n    \"data\": {\n        \"id\": 3,\n        \"name\": \"برج الأمل\",\n        \"location\": \"الرياض - حي النرجس\",\n        \"owner_id\": 5,\n        \"owner_name\": \"المالك الأول - تيست\",\n        \"owner\": {\n            \"id\": 5,\n            \"name\": \"المالك الأول - تيست\",\n            \"username\": \"owner\",\n            \"phone\": \"0500000002\",\n            \"email\": \"owner@tcms.sa\"\n        },\n        \"units_count\": 0,\n        \"active_contracts_count\": 0,\n        \"collected_this_month\": 0,\n        \"collected_this_month_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 0,\n        \"overdue_amount_formatted\": \"0 ر.س\",\n        \"created_at\": \"2026-10-21T09:00:00+03:00\",\n        \"updated_at\": \"2026-10-21T09:00:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Validation Error - أخطاء التحقق",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"يرجى اختيار المالك. (و 1 خطأ إضافي)\",\n    \"errors\": {\n        \"owner_id\": [\n            \"يرجى اختيار المالك.\"\n        ],\n        \"name\": [\n            \"اسم العقار مطلوب.\"\n        ]\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "3. تفاصيل العقار (Show Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "استرجاع تفاصيل عقار محدد وإحصائياته."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - فتح العقار والجداول الثلاثة والإحصائيات",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"بيانات العقار وعقوده ووحداته.\",\n    \"data\": {\n        \"property\": {\n            \"id\": 1,\n            \"name\": \"تيست\",\n            \"location\": \"الرياض - حي النرجس\",\n            \"owner_id\": 5,\n            \"owner_name\": \"المالك الأول - تيست\"\n        },\n        \"statistics\": {\n            \"active_contracts_count\": 2,\n            \"renewal_notice\": \"لا توجد عقود للتجديد\",\n            \"active_contracts_total_value\": 22000,\n            \"active_contracts_total_value_formatted\": \"22,000 ر.س\",\n            \"active_contracts_collected\": 0,\n            \"active_contracts_collected_formatted\": \"0 ر.س\",\n            \"collected_this_month\": 0,\n            \"collected_this_month_formatted\": \"هذا الشهر: 0 ر.س\",\n            \"total_overdue\": 1833,\n            \"total_overdue_formatted\": \"1,833 ر.س\"\n        },\n        \"active_contracts\": [\n            {\n                \"id\": 1,\n                \"unit_number\": \"78\",\n                \"tenant_name\": \"احمد محمد\",\n                \"tenant_phone\": \"01143693590\",\n                \"national_id\": \"121212121\",\n                \"start_date_formatted\": \"21 أكتوبر 2026\",\n                \"end_date_formatted\": \"20 أكتوبر 2027\",\n                \"installment_cycle_formatted\": \"833 ر.س شهري\",\n                \"total_amount_formatted\": \"10,000 ر.س\",\n                \"collected_amount_formatted\": \"0 ر.س\",\n                \"overdue_amount_formatted\": \"833 ر.س\",\n                \"status\": \"active\",\n                \"status_label\": \"ساري\"\n            },\n            {\n                \"id\": 2,\n                \"unit_number\": \"80\",\n                \"tenant_name\": \"محمد محمد\",\n                \"tenant_phone\": \"0102849444\",\n                \"national_id\": \"1245478\",\n                \"start_date_formatted\": \"21 أكتوبر 2026\",\n                \"end_date_formatted\": \"20 أكتوبر 2027\",\n                \"installment_cycle_formatted\": \"1,000 ر.س شهري\",\n                \"total_amount_formatted\": \"12,000 ر.س\",\n                \"collected_amount_formatted\": \"0 ر.س\",\n                \"overdue_amount_formatted\": \"1,000 ر.س\",\n                \"status\": \"active\",\n                \"status_label\": \"ساري\"\n            }\n        ],\n        \"tenants_without_active_contract\": [],\n        \"previous_contracts\": []\n    }\n}"
+                                }
+                            ],
+                            "description": "فتح العقار: يعرض الصفحة الكاملة التي تشمل كروت الإحصائيات الـ 4، جدول 'الوحدات والعقود السارية'، جدول 'مستأجرون مرتبطون بالعقار بدون عقد ساري'، وجدول 'سجل العقود السابقة (المجددة والمغلقة)'."
+                        },
+                        {
+                            "name": "4. تعديل بيانات العقار (Update Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"owner_id\": 5,\n    \"name\": \"برج الأمل المحدث\",\n    \"location\": \"الرياض - حي النرجس\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "نافذة تعديل العقار: تحديث اسم العقار أو المالك أو الموقع."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - تم تحديث بيانات العقار",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم تحديث بيانات العقار بنجاح.\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"برج الأمل المحدث\",\n        \"location\": \"الرياض - حي النرجس\",\n        \"owner_id\": 5,\n        \"owner_name\": \"المالك الأول - تيست\",\n        \"owner\": {\n            \"id\": 5,\n            \"name\": \"المالك الأول - تيست\",\n            \"username\": \"owner\",\n            \"phone\": \"0500000002\",\n            \"email\": \"owner@tcms.sa\"\n        },\n        \"units_count\": 2,\n        \"active_contracts_count\": 2,\n        \"collected_this_month\": 0,\n        \"collected_this_month_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 1833,\n        \"overdue_amount_formatted\": \"1,833 ر.س\",\n        \"created_at\": \"2026-10-21T08:00:00+03:00\",\n        \"updated_at\": \"2026-10-21T09:15:00+03:00\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "5. حذف عقار (Delete Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/general-manager/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "general-manager",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "حذف عقار من النظام مع فك ارتباط أي وحدات مسجلة عليه بأمان."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - تم حذف العقار بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حذف العقار بنجاح.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إدارة عقود العقار (Property Contracts Operations)",
+                            "item": [
+                                {
+                                    "name": "1. خيارات ودورات نموذج العقد (Contract Options & Cycles)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts/options",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "options"
+                                            ]
+                                        },
+                                        "description": "يرجع قيم الـ Enums بشكل منفرد: دورات السداد (شهري، ربع سنوي، نصف سنوي، سنوي)، خيارات إنشاء مطالبات الاستحقاق (من الشهر الحالي فقط، من تاريخ بداية العقد، بدون إنشاء مطالبات)، حالات العقد، وقائمة المحصلين والمستأجرين المتاحين."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - خيارات نموذج العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"خيارات نموذج إضافة العقد.\",\n    \"data\": {\n        \"payment_cycles\": [\n            {\n                \"value\": \"monthly\",\n                \"label\": \"شهري\"\n            },\n            {\n                \"value\": \"quarterly\",\n                \"label\": \"ربع سنوي\"\n            },\n            {\n                \"value\": \"semi_annual\",\n                \"label\": \"نصف سنوي\"\n            },\n            {\n                \"value\": \"annual\",\n                \"label\": \"سنوي\"\n            }\n        ],\n        \"claim_generation_modes\": [\n            {\n                \"value\": \"current_month_only\",\n                \"label\": \"من الشهر الحالي فقط\"\n            },\n            {\n                \"value\": \"from_start_date\",\n                \"label\": \"من تاريخ بداية العقد (تظهر المتأخرات)\"\n            },\n            {\n                \"value\": \"none\",\n                \"label\": \"بدون إنشاء مطالبات\"\n            }\n        ],\n        \"contract_statuses\": [\n            {\n                \"value\": \"active\",\n                \"label\": \"ساري\"\n            },\n            {\n                \"value\": \"renewed\",\n                \"label\": \"مُجدّد\"\n            },\n            {\n                \"value\": \"closed\",\n                \"label\": \"مُغلق\"\n            }\n        ],\n        \"collectors\": [\n            {\n                \"id\": 4,\n                \"name\": \"المحصل الأول\"\n            }\n        ],\n        \"tenants\": [\n            {\n                \"id\": 1,\n                \"tenant_number\": \"1212\",\n                \"name\": \"محمد احمد\",\n                \"phone\": \"01143693590\",\n                \"national_id\": \"124578963654\",\n                \"property_name\": \"تيست\",\n                \"property_unit\": \"تيست - وحدة 78\",\n                \"display_label\": \"محمد احمد - 01143693590 (تيست - وحدة 78)\"\n            }\n        ]\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "2. إضافة عقد - مستأجر مسجل بالنظام (Store Contract - Existing Tenant)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"is_new_tenant\": false,\n    \"tenant_id\": 1,\n    \"unit_number\": \"78\",\n    \"start_date\": \"2026-10-21\",\n    \"end_date\": \"2027-10-20\",\n    \"total_amount\": 10000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 833,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"عقد مسجل لمستأجر قائم\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts"
+                                            ]
+                                        },
+                                        "description": "إضافة عقد جديد لمستأجر موجود مسبقاً بالنظام."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تمت إضافة العقد",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقد بنجاح.\",\n    \"data\": {\n        \"id\": 1,\n        \"contract_number\": \"CNT-202610-0001\",\n        \"unit_number\": \"78\",\n        \"tenant_id\": 1,\n        \"tenant_name\": \"احمد محمد\",\n        \"tenant_phone\": \"01143693590\",\n        \"national_id\": \"121212121\",\n        \"start_date\": \"2026-10-21\",\n        \"start_date_formatted\": \"21 أكتوبر 2026\",\n        \"end_date\": \"2027-10-20\",\n        \"end_date_formatted\": \"20 أكتوبر 2027\",\n        \"payment_cycle\": \"monthly\",\n        \"payment_cycle_label\": \"شهري\",\n        \"installment_amount\": 833,\n        \"installment_amount_formatted\": \"833 ر.س\",\n        \"installment_cycle_formatted\": \"833 ر.س شهري\",\n        \"total_amount\": 10000,\n        \"total_amount_formatted\": \"10,000 ر.س\",\n        \"collected_amount\": 0,\n        \"collected_amount_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 833,\n        \"overdue_amount_formatted\": \"833 ر.س\",\n        \"claim_generation_mode\": \"current_month_only\",\n        \"claim_generation_mode_label\": \"من الشهر الحالي فقط\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\",\n        \"notes\": \"عقد مسجل لمستأجر قائم\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "3. إضافة عقد - مستأجر جديد (Store Contract - New Tenant)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"is_new_tenant\": true,\n    \"name\": \"محمد محمد\",\n    \"phone\": \"0102849444\",\n    \"national_id\": \"1245478\",\n    \"collector_id\": 4,\n    \"unit_number\": \"80\",\n    \"start_date\": \"2026-10-21\",\n    \"end_date\": \"2027-10-20\",\n    \"total_amount\": 12000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 1000,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"تسجيل مستأجر جديد وإنشاء عقده\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts"
+                                            ]
+                                        },
+                                        "description": "إضافة مستأجر جديد بالكامل في جدول users وجدول tenant_info، وإنشاء عقده وربطه بالعقار مباشرة."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تمت إضافة المستأجر وعقده بنجاح",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقد بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"tenant_id\": 2,\n        \"tenant_name\": \"محمد محمد\",\n        \"tenant_phone\": \"0102849444\",\n        \"national_id\": \"1245478\",\n        \"start_date\": \"2026-10-21\",\n        \"start_date_formatted\": \"21 أكتوبر 2026\",\n        \"end_date\": \"2027-10-20\",\n        \"end_date_formatted\": \"20 أكتوبر 2027\",\n        \"payment_cycle\": \"monthly\",\n        \"payment_cycle_label\": \"شهري\",\n        \"installment_amount\": 1000,\n        \"installment_amount_formatted\": \"1,000 ر.س\",\n        \"installment_cycle_formatted\": \"1,000 ر.س شهري\",\n        \"total_amount\": 12000,\n        \"total_amount_formatted\": \"12,000 ر.س\",\n        \"collected_amount\": 0,\n        \"collected_amount_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 1000,\n        \"overdue_amount_formatted\": \"1,000 ر.س\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "4. تعديل بيانات العقد (Update Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "PUT",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"unit_number\": \"80\",\n    \"total_amount\": 12000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 1000,\n    \"notes\": \"تحديث بيانات القسط\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts/2",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "2"
+                                            ]
+                                        },
+                                        "description": "تعديل بيانات العقد القائم."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - تم تحديث العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم تحديث بيانات العقد بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"total_amount\": 12000,\n        \"status\": \"active\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "5. إنهاء العقد (Terminate Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"closure_reason\": \"انتهاء فترة الإيجار بناء على رغبة المستأجر\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts/2/terminate",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "2",
+                                                "terminate"
+                                            ]
+                                        },
+                                        "description": "إنهاء العقد: ينتقل العقد لجدول 'سجل العقود السابقة (المجددة والمغلقة)' بحالة 'مُغلق'، ويظهر المستأجر في جدول 'مستأجرون مرتبطون بالعقار بدون عقد ساري'."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - تم إنهاء العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم إنهاء العقد بنجاح ونقله لسجل العقود السابقة.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"tenant_name\": \"محمد محمد\",\n        \"total_amount\": 12000,\n        \"total_amount_formatted\": \"12,000 ر.س\",\n        \"status\": \"closed\",\n        \"status_label\": \"مُغلق\",\n        \"closure_reason\": \"انتهاء فترة الإيجار بناء على رغبة المستأجر\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "6. تجديد العقد (Renew Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"start_date\": \"2027-10-21\",\n    \"end_date\": \"2028-10-20\",\n    \"total_amount\": 11000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 916.67,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"تجديد العقد لسنة جديدة\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/general-manager/properties/1/contracts/1/renew",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "general-manager",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "1",
+                                                "renew"
+                                            ]
+                                        },
+                                        "description": "تجديد العقد: يتم تحويل العقد الحالي لحالة 'مُجدّد' ونقله إلى 'سجل العقود السابقة (المجددة والمغلقة)'، وإنشاء عقد جديد ساري في جدول 'الوحدات والعقود السارية'."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تم تجديد العقد بنجاح",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم تجديد العقد بنجاح ونقل العقد السابق لسجل العقود السابقة.\",\n    \"data\": {\n        \"id\": 3,\n        \"contract_number\": \"CNT-202610-0003\",\n        \"unit_number\": \"78\",\n        \"total_amount\": 11000,\n        \"total_amount_formatted\": \"11,000 ر.س\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\"\n    }\n}"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
@@ -9314,6 +9984,680 @@
                                         }
                                     ],
                                     "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "موديول مشرف العقارات (Real Estate Supervisor Module)",
+            "item": [
+                {
+                    "name": "إدارة الأملاك والعقود (Properties & Contracts Management)",
+                    "item": [
+                        {
+                            "name": "1. عرض قائمة العقارات والإحصائيات (Index Properties)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/real-estate-supervisor/properties?search=&owner_id=&period=2026-10",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "real-estate-supervisor",
+                                        "properties"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "search",
+                                            "value": "",
+                                            "description": "بحث باسم العقار أو الموقع أو المالك"
+                                        },
+                                        {
+                                            "key": "owner_id",
+                                            "value": "",
+                                            "description": "فلترة بمالك محدد من قائمة الملاك"
+                                        },
+                                        {
+                                            "key": "period",
+                                            "value": "2026-10",
+                                            "description": "الشهر المطلوب لحساب المبالغ المحصلة (صيغة YYYY-MM)"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "15",
+                                            "description": "عدد العقارات في الصفحة (اختياري، افتراضياً بدون تقسيم أو حسب المحدد)",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "شاشة 'إدارة الأملاك والعقود': تعرض جميع العقارات في كروت مع إحصائيات العقود السارية، المحصل هذا الشهر، والمبالغ المتأخرة، بالإضافة لخيار البحث والفلترة حسب المالك."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - قائمة العقارات والإحصائيات",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم جلب قائمة العقارات بنجاح.\",\n    \"data\": {\n        \"properties\": [\n            {\n                \"id\": 1,\n                \"name\": \"تيست\",\n                \"location\": \"الرياض - حي النرجس\",\n                \"owner_id\": 5,\n                \"owner_name\": \"المالك الأول - تيست\",\n                \"owner\": {\n                    \"id\": 5,\n                    \"name\": \"المالك الأول - تيست\",\n                    \"username\": \"owner\",\n                    \"phone\": \"0500000002\",\n                    \"email\": \"owner@tcms.sa\"\n                },\n                \"units_count\": 2,\n                \"active_contracts_count\": 2,\n                \"collected_this_month\": 0,\n                \"collected_this_month_formatted\": \"0 ر.س\",\n                \"overdue_amount\": 1833,\n                \"overdue_amount_formatted\": \"1,833 ر.س\",\n                \"created_at\": \"2026-10-21T08:00:00+03:00\",\n                \"updated_at\": \"2026-10-21T08:00:00+03:00\"\n            },\n            {\n                \"id\": 2,\n                \"name\": \"mmm\",\n                \"location\": \"جدة - حي الروضة\",\n                \"owner_id\": 5,\n                \"owner_name\": \"المالك الأول - mmm\",\n                \"owner\": {\n                    \"id\": 5,\n                    \"name\": \"المالك الأول - mmm\",\n                    \"username\": \"owner\",\n                    \"phone\": \"0500000002\",\n                    \"email\": \"owner@tcms.sa\"\n                },\n                \"units_count\": 0,\n                \"active_contracts_count\": 0,\n                \"collected_this_month\": 0,\n                \"collected_this_month_formatted\": \"0 ر.س\",\n                \"overdue_amount\": 0,\n                \"overdue_amount_formatted\": \"0 ر.س\",\n                \"created_at\": \"2026-10-21T08:30:00+03:00\",\n                \"updated_at\": \"2026-10-21T08:30:00+03:00\"\n            }\n        ],\n        \"statistics\": {\n            \"properties_count\": 2,\n            \"active_contracts_count\": 2,\n            \"subtitle\": \"2 عقار . 2 عقد ساري - اضغط على أي عقار للدخول إليه وإدارة عقوده ووحداته\"\n        },\n        \"owners\": [\n            {\n                \"id\": 5,\n                \"name\": \"المالك الأول - تيست\"\n            },\n            {\n                \"id\": 6,\n                \"name\": \"عبدالله بن عبدالعزيز الراجحي\"\n            }\n        ]\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "2. إضافة عقار جديد (Store Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"owner_id\": 5,\n    \"name\": \"برج الأمل\",\n    \"location\": \"الرياض - حي النرجس\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/real-estate-supervisor/properties",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "real-estate-supervisor",
+                                        "properties"
+                                    ]
+                                },
+                                "description": "نافذة إضافة عقار جديد: يتم اختيار المالك من القائمة المنسدلة، وكتابة اسم العقار، والموقع/الحي اختيارياً."
+                            },
+                            "response": [
+                                {
+                                    "name": "201 Created - تمت إضافة العقار بنجاح",
+                                    "status": "Created",
+                                    "code": 201,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقار بنجاح.\",\n    \"data\": {\n        \"id\": 3,\n        \"name\": \"برج الأمل\",\n        \"location\": \"الرياض - حي النرجس\",\n        \"owner_id\": 5,\n        \"owner_name\": \"المالك الأول - تيست\",\n        \"owner\": {\n            \"id\": 5,\n            \"name\": \"المالك الأول - تيست\",\n            \"username\": \"owner\",\n            \"phone\": \"0500000002\",\n            \"email\": \"owner@tcms.sa\"\n        },\n        \"units_count\": 0,\n        \"active_contracts_count\": 0,\n        \"collected_this_month\": 0,\n        \"collected_this_month_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 0,\n        \"overdue_amount_formatted\": \"0 ر.س\",\n        \"created_at\": \"2026-10-21T09:00:00+03:00\",\n        \"updated_at\": \"2026-10-21T09:00:00+03:00\"\n    }\n}"
+                                },
+                                {
+                                    "name": "422 Validation Error - أخطاء التحقق",
+                                    "status": "Unprocessable Content",
+                                    "code": 422,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"يرجى اختيار المالك. (و 1 خطأ إضافي)\",\n    \"errors\": {\n        \"owner_id\": [\n            \"يرجى اختيار المالك.\"\n        ],\n        \"name\": [\n            \"اسم العقار مطلوب.\"\n        ]\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "3. تفاصيل العقار (Show Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/real-estate-supervisor/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "real-estate-supervisor",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "استرجاع تفاصيل عقار محدد وإحصائياته."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - تفاصيل العقار",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تفاصيل العقار.\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"تيست\",\n        \"location\": \"الرياض - حي النرجس\",\n        \"owner_id\": 5,\n        \"owner_name\": \"المالك الأول - تيست\",\n        \"owner\": {\n            \"id\": 5,\n            \"name\": \"المالك الأول - تيست\",\n            \"username\": \"owner\",\n            \"phone\": \"0500000002\",\n            \"email\": \"owner@tcms.sa\"\n        },\n        \"units_count\": 2,\n        \"active_contracts_count\": 2,\n        \"collected_this_month\": 0,\n        \"collected_this_month_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 1833,\n        \"overdue_amount_formatted\": \"1,833 ر.س\",\n        \"created_at\": \"2026-10-21T08:00:00+03:00\",\n        \"updated_at\": \"2026-10-21T08:00:00+03:00\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "4. تعديل بيانات العقار (Update Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"owner_id\": 5,\n    \"name\": \"برج الأمل المحدث\",\n    \"location\": \"الرياض - حي النرجس\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/real-estate-supervisor/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "real-estate-supervisor",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "نافذة تعديل العقار: تحديث اسم العقار أو المالك أو الموقع."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - تم تحديث بيانات العقار",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم تحديث بيانات العقار بنجاح.\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"برج الأمل المحدث\",\n        \"location\": \"الرياض - حي النرجس\",\n        \"owner_id\": 5,\n        \"owner_name\": \"المالك الأول - تيست\",\n        \"owner\": {\n            \"id\": 5,\n            \"name\": \"المالك الأول - تيست\",\n            \"username\": \"owner\",\n            \"phone\": \"0500000002\",\n            \"email\": \"owner@tcms.sa\"\n        },\n        \"units_count\": 2,\n        \"active_contracts_count\": 2,\n        \"collected_this_month\": 0,\n        \"collected_this_month_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 1833,\n        \"overdue_amount_formatted\": \"1,833 ر.س\",\n        \"created_at\": \"2026-10-21T08:00:00+03:00\",\n        \"updated_at\": \"2026-10-21T09:15:00+03:00\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "5. حذف عقار (Delete Property)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/real-estate-supervisor/properties/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "real-estate-supervisor",
+                                        "properties",
+                                        "1"
+                                    ]
+                                },
+                                "description": "حذف عقار من النظام مع فك ارتباط أي وحدات مسجلة عليه بأمان."
+                            },
+                            "response": [
+                                {
+                                    "name": "200 Success - تم حذف العقار بنجاح",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"تم حذف العقار بنجاح.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "إدارة عقود العقار (Property Contracts Operations)",
+                            "item": [
+                                {
+                                    "name": "1. خيارات ودورات نموذج العقد (Contract Options & Cycles)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts/options",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "options"
+                                            ]
+                                        },
+                                        "description": "يرجع قيم الـ Enums بشكل منفرد: دورات السداد (شهري، ربع سنوي، نصف سنوي، سنوي)، خيارات إنشاء مطالبات الاستحقاق (من الشهر الحالي فقط، من تاريخ بداية العقد، بدون إنشاء مطالبات)، حالات العقد، وقائمة المحصلين والمستأجرين المتاحين."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - خيارات نموذج العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"خيارات نموذج إضافة العقد.\",\n    \"data\": {\n        \"payment_cycles\": [\n            {\n                \"value\": \"monthly\",\n                \"label\": \"شهري\"\n            },\n            {\n                \"value\": \"quarterly\",\n                \"label\": \"ربع سنوي\"\n            },\n            {\n                \"value\": \"semi_annual\",\n                \"label\": \"نصف سنوي\"\n            },\n            {\n                \"value\": \"annual\",\n                \"label\": \"سنوي\"\n            }\n        ],\n        \"claim_generation_modes\": [\n            {\n                \"value\": \"current_month_only\",\n                \"label\": \"من الشهر الحالي فقط\"\n            },\n            {\n                \"value\": \"from_start_date\",\n                \"label\": \"من تاريخ بداية العقد (تظهر المتأخرات)\"\n            },\n            {\n                \"value\": \"none\",\n                \"label\": \"بدون إنشاء مطالبات\"\n            }\n        ],\n        \"contract_statuses\": [\n            {\n                \"value\": \"active\",\n                \"label\": \"ساري\"\n            },\n            {\n                \"value\": \"renewed\",\n                \"label\": \"مُجدّد\"\n            },\n            {\n                \"value\": \"closed\",\n                \"label\": \"مُغلق\"\n            }\n        ],\n        \"collectors\": [\n            {\n                \"id\": 4,\n                \"name\": \"المحصل الأول\"\n            }\n        ],\n        \"tenants\": [\n            {\n                \"id\": 1,\n                \"tenant_number\": \"1212\",\n                \"name\": \"محمد احمد\",\n                \"phone\": \"01143693590\",\n                \"national_id\": \"124578963654\",\n                \"property_name\": \"تيست\",\n                \"property_unit\": \"تيست - وحدة 78\",\n                \"display_label\": \"محمد احمد - 01143693590 (تيست - وحدة 78)\"\n            }\n        ]\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "2. إضافة عقد - مستأجر مسجل بالنظام (Store Contract - Existing Tenant)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"is_new_tenant\": false,\n    \"tenant_id\": 1,\n    \"unit_number\": \"78\",\n    \"start_date\": \"2026-10-21\",\n    \"end_date\": \"2027-10-20\",\n    \"total_amount\": 10000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 833,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"عقد مسجل لمستأجر قائم\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts"
+                                            ]
+                                        },
+                                        "description": "إضافة عقد جديد لمستأجر موجود مسبقاً بالنظام."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تمت إضافة العقد",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقد بنجاح.\",\n    \"data\": {\n        \"id\": 1,\n        \"contract_number\": \"CNT-202610-0001\",\n        \"unit_number\": \"78\",\n        \"tenant_id\": 1,\n        \"tenant_name\": \"احمد محمد\",\n        \"tenant_phone\": \"01143693590\",\n        \"national_id\": \"121212121\",\n        \"start_date\": \"2026-10-21\",\n        \"start_date_formatted\": \"21 أكتوبر 2026\",\n        \"end_date\": \"2027-10-20\",\n        \"end_date_formatted\": \"20 أكتوبر 2027\",\n        \"payment_cycle\": \"monthly\",\n        \"payment_cycle_label\": \"شهري\",\n        \"installment_amount\": 833,\n        \"installment_amount_formatted\": \"833 ر.س\",\n        \"installment_cycle_formatted\": \"833 ر.س شهري\",\n        \"total_amount\": 10000,\n        \"total_amount_formatted\": \"10,000 ر.س\",\n        \"collected_amount\": 0,\n        \"collected_amount_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 833,\n        \"overdue_amount_formatted\": \"833 ر.س\",\n        \"claim_generation_mode\": \"current_month_only\",\n        \"claim_generation_mode_label\": \"من الشهر الحالي فقط\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\",\n        \"notes\": \"عقد مسجل لمستأجر قائم\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "3. إضافة عقد - مستأجر جديد (Store Contract - New Tenant)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"is_new_tenant\": true,\n    \"name\": \"محمد محمد\",\n    \"phone\": \"0102849444\",\n    \"national_id\": \"1245478\",\n    \"collector_id\": 4,\n    \"unit_number\": \"80\",\n    \"start_date\": \"2026-10-21\",\n    \"end_date\": \"2027-10-20\",\n    \"total_amount\": 12000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 1000,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"تسجيل مستأجر جديد وإنشاء عقده\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts"
+                                            ]
+                                        },
+                                        "description": "إضافة مستأجر جديد بالكامل في جدول users وجدول tenant_info، وإنشاء عقده وربطه بالعقار مباشرة."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تمت إضافة المستأجر وعقده بنجاح",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تمت إضافة العقد بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"tenant_id\": 2,\n        \"tenant_name\": \"محمد محمد\",\n        \"tenant_phone\": \"0102849444\",\n        \"national_id\": \"1245478\",\n        \"start_date\": \"2026-10-21\",\n        \"start_date_formatted\": \"21 أكتوبر 2026\",\n        \"end_date\": \"2027-10-20\",\n        \"end_date_formatted\": \"20 أكتوبر 2027\",\n        \"payment_cycle\": \"monthly\",\n        \"payment_cycle_label\": \"شهري\",\n        \"installment_amount\": 1000,\n        \"installment_amount_formatted\": \"1,000 ر.س\",\n        \"installment_cycle_formatted\": \"1,000 ر.س شهري\",\n        \"total_amount\": 12000,\n        \"total_amount_formatted\": \"12,000 ر.س\",\n        \"collected_amount\": 0,\n        \"collected_amount_formatted\": \"0 ر.س\",\n        \"overdue_amount\": 1000,\n        \"overdue_amount_formatted\": \"1,000 ر.س\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "4. تعديل بيانات العقد (Update Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "PUT",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"unit_number\": \"80\",\n    \"total_amount\": 12000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 1000,\n    \"notes\": \"تحديث بيانات القسط\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts/2",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "2"
+                                            ]
+                                        },
+                                        "description": "تعديل بيانات العقد القائم."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - تم تحديث العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم تحديث بيانات العقد بنجاح.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"total_amount\": 12000,\n        \"status\": \"active\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "5. إنهاء العقد (Terminate Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"closure_reason\": \"انتهاء فترة الإيجار بناء على رغبة المستأجر\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts/2/terminate",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "2",
+                                                "terminate"
+                                            ]
+                                        },
+                                        "description": "إنهاء العقد: ينتقل العقد لجدول 'سجل العقود السابقة (المجددة والمغلقة)' بحالة 'مُغلق'، ويظهر المستأجر في جدول 'مستأجرون مرتبطون بالعقار بدون عقد ساري'."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "200 Success - تم إنهاء العقد",
+                                            "status": "OK",
+                                            "code": 200,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم إنهاء العقد بنجاح ونقله لسجل العقود السابقة.\",\n    \"data\": {\n        \"id\": 2,\n        \"contract_number\": \"CNT-202610-0002\",\n        \"unit_number\": \"80\",\n        \"tenant_name\": \"محمد محمد\",\n        \"total_amount\": 12000,\n        \"total_amount_formatted\": \"12,000 ر.س\",\n        \"status\": \"closed\",\n        \"status_label\": \"مُغلق\",\n        \"closure_reason\": \"انتهاء فترة الإيجار بناء على رغبة المستأجر\"\n    }\n}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "6. تجديد العقد (Renew Contract)",
+                                    "request": {
+                                        "auth": {
+                                            "type": "bearer",
+                                            "bearer": [
+                                                {
+                                                    "key": "token",
+                                                    "value": "{{token}}",
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"start_date\": \"2027-10-21\",\n    \"end_date\": \"2028-10-20\",\n    \"total_amount\": 11000,\n    \"payment_cycle\": \"monthly\",\n    \"installment_amount\": 916.67,\n    \"claim_generation_mode\": \"current_month_only\",\n    \"notes\": \"تجديد العقد لسنة جديدة\"\n}"
+                                        },
+                                        "url": {
+                                            "raw": "{{base_url}}/real-estate-supervisor/properties/1/contracts/1/renew",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "real-estate-supervisor",
+                                                "properties",
+                                                "1",
+                                                "contracts",
+                                                "1",
+                                                "renew"
+                                            ]
+                                        },
+                                        "description": "تجديد العقد: يتم تحويل العقد الحالي لحالة 'مُجدّد' ونقله إلى 'سجل العقود السابقة (المجددة والمغلقة)'، وإنشاء عقد جديد ساري في جدول 'الوحدات والعقود السارية'."
+                                    },
+                                    "response": [
+                                        {
+                                            "name": "201 Created - تم تجديد العقد بنجاح",
+                                            "status": "Created",
+                                            "code": 201,
+                                            "_postman_previewlanguage": "json",
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n    \"success\": true,\n    \"message\": \"تم تجديد العقد بنجاح ونقل العقد السابق لسجل العقود السابقة.\",\n    \"data\": {\n        \"id\": 3,\n        \"contract_number\": \"CNT-202610-0003\",\n        \"unit_number\": \"78\",\n        \"total_amount\": 11000,\n        \"total_amount_formatted\": \"11,000 ر.س\",\n        \"status\": \"active\",\n        \"status_label\": \"ساري\"\n    }\n}"
+                                        }
+                                    ]
                                 }
                             ]
                         }

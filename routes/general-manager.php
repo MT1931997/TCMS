@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\GeneralManager\OwnerManagementController;
 use App\Http\Controllers\Api\GeneralManager\OwnerPaymentController;
 use App\Http\Controllers\Api\GeneralManager\PaymentApprovalController;
 use App\Http\Controllers\Api\GeneralManager\PaymentController;
+use App\Http\Controllers\Api\GeneralManager\PropertyController;
 use App\Http\Controllers\Api\GeneralManager\SupervisorManagementController;
 use App\Http\Controllers\Api\GeneralManager\TenantController;
 use App\Http\Controllers\Api\GeneralManager\TenantImportController;
@@ -91,3 +92,11 @@ Route::delete('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestCo
 // أعمال الصيانة (التقارير المرسلة، إرسال تقرير صيانة جديد، تفاصيل، تعديل، حذف، وتصدير الصيانة المعتمدة)
 Route::get('maintenance-works/export-pdf', [MaintenanceWorkController::class, 'exportPdf'])->name('api.general-manager.maintenance-works.export-pdf');
 Route::apiResource('maintenance-works', MaintenanceWorkController::class)->names('api.general-manager.maintenance-works');
+
+// إدارة الأملاك والعقود (العقارات)
+Route::get('properties/{property}/contracts/options', [PropertyController::class, 'contractOptions'])->name('api.general-manager.properties.contracts.options');
+Route::post('properties/{property}/contracts', [PropertyController::class, 'storeContract'])->name('api.general-manager.properties.contracts.store');
+Route::put('properties/{property}/contracts/{contract}', [PropertyController::class, 'updateContract'])->name('api.general-manager.properties.contracts.update');
+Route::post('properties/{property}/contracts/{contract}/terminate', [PropertyController::class, 'terminateContract'])->name('api.general-manager.properties.contracts.terminate');
+Route::post('properties/{property}/contracts/{contract}/renew', [PropertyController::class, 'renewContract'])->name('api.general-manager.properties.contracts.renew');
+Route::apiResource('properties', PropertyController::class)->names('api.general-manager.properties');

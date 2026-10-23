@@ -8,6 +8,7 @@ use App\Enums\MaintenanceWorkStatus;
 use App\Enums\UserType;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceWork;
+use App\Models\Property;
 use App\Models\TenantInfo;
 use App\Models\TenantNote;
 use App\Models\TenantPromise;
@@ -101,6 +102,28 @@ class DatabaseSeeder extends Seeder
         $generalManager = User::where('username', 'admin')->first();
         $collector = User::where('username', 'collector1')->first();
         $owner = User::where('username', 'owner')->first();
+        $maintenanceSupervisor = User::where('username', 'maint1')->first();
+
+        // 1.5 إنشاء العقارات (الأملاك) المطابقة لشاشة "إدارة الأملاك والعقود"
+        $propTest = Property::updateOrCreate(
+            ['name' => 'تيست'],
+            [
+                'name' => 'تيست',
+                'owner_id' => $owner->id,
+                'location' => 'الرياض - حي النرجس',
+                'created_by' => $generalManager->id,
+            ]
+        );
+
+        $propMmm = Property::updateOrCreate(
+            ['name' => 'mmm'],
+            [
+                'name' => 'mmm',
+                'owner_id' => $owner->id,
+                'location' => 'جدة - حي الروضة',
+                'created_by' => $generalManager->id,
+            ]
+        );
 
         // 2. إنشاء المستأجر المطابق لشاشة الفرونت إند تماماً (محمد أحمد #1212)
         $tenantUser = User::updateOrCreate(
@@ -121,6 +144,7 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $tenantUser->id,
                 'tenant_number' => '1212',
                 'property_unit' => 'برج الامل',
+                'property_id' => $propTest->id,
                 'due_date' => '2026-10-30',
                 'monthly_target' => 1000.00,
                 'collector_id' => $collector->id,

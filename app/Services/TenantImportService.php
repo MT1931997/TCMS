@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserType;
+use App\Models\Property;
 use App\Models\TenantInfo;
 use App\Models\User;
 use Carbon\Carbon;
@@ -127,6 +128,24 @@ class TenantImportService
                     &$imported,
                     &$updated
                 ) {
+                    $matchedPropertyId = null;
+                    if (! empty($propertyUnit)) {
+                        $parts = explode('-', $propertyUnit);
+                        $propertyName = trim($parts[0] ?: $propertyUnit);
+                        if (! empty($propertyName)) {
+                            if ($ownerId) {
+                                $prop = Property::firstOrCreate(
+                                    ['name' => $propertyName, 'owner_id' => $ownerId],
+                                    ['created_by' => $supervisor->id]
+                                );
+                                $matchedPropertyId = $prop->id;
+                            } else {
+                                $prop = Property::where('name', $propertyName)->first();
+                                $matchedPropertyId = $prop?->id;
+                            }
+                        }
+                    }
+
                     $existingTenantInfo = TenantInfo::where('tenant_number', $tenantNumber)->first();
 
                     if ($existingTenantInfo) {
@@ -140,6 +159,7 @@ class TenantImportService
                         $existingTenantInfo->update([
                             'contract_number' => $contractNumberVal ?? $existingTenantInfo->contract_number,
                             'property_unit' => $propertyUnit ?: $existingTenantInfo->property_unit,
+                            'property_id' => $matchedPropertyId ?? $existingTenantInfo->property_id,
                             'due_date' => $dueDate,
                             'monthly_target' => $monthlyTarget ?: $existingTenantInfo->monthly_target,
                             'collector_id' => $collectorId,
@@ -165,6 +185,7 @@ class TenantImportService
                             'tenant_number' => $tenantNumber,
                             'contract_number' => $contractNumberVal,
                             'property_unit' => $propertyUnit ?: 'غير محدد',
+                            'property_id' => $matchedPropertyId,
                             'due_date' => $dueDate,
                             'monthly_target' => $monthlyTarget,
                             'collector_id' => $collectorId,

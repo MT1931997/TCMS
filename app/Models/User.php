@@ -140,6 +140,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Properties owned by this owner.
+     */
+    public function properties(): HasMany
+    {
+        return $this->hasMany(Property::class, 'owner_id');
+    }
+
+    /**
      * Maintenance requests assigned/linked to this owner.
      */
     public function ownedMaintenanceRequests(): HasMany
