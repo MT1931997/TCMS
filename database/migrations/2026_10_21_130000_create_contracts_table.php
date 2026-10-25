@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->string('contract_number')->nullable()->index();
-            $table->foreignId('property_id')->constrained('properties')->cascadeOnDelete();
-            $table->foreignId('tenant_id')->constrained('tenant_info')->cascadeOnDelete();
+            $table->string('contract_number')->nullable()->unique();
+            $table->foreignId('property_id')->constrained('properties')->restrictOnDelete();
+            $table->foreignId('tenant_id')->constrained('tenant_info')->restrictOnDelete();
             $table->string('unit_number')->index();
             $table->date('start_date')->index();
             $table->date('end_date')->index();

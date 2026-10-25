@@ -33,7 +33,7 @@ class PaymentResource extends JsonResource
             'payment_method' => $this->payment_method,
             'receipt_number' => $this->receipt_number,
             'attachment_path' => $this->attachment_path,
-            'attachment_url' => $this->attachment_path ? asset('storage/'.$this->attachment_path) : null,
+            'attachment_url' => $this->attachment_path ? route('api.payments.attachment', $this->id) : null,
             'amount' => (float) $this->amount,
             'period' => $this->period,
             'status' => ($status = $this->status instanceof PaymentStatus ? $this->status : PaymentStatus::tryFrom((string) $this->status))?->value ?? (string) $this->status,

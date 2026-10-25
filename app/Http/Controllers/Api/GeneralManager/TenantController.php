@@ -48,7 +48,7 @@ class TenantController extends Controller
             $query->where('status', $status);
         }
 
-        $perPage = (int) $request->query('per_page', 15);
+        $perPage = min(max($request->integer('per_page', 15), 1), 100);
         $tenants = $query->latest()->paginate($perPage);
 
         $period = $request->query('period', now()->format('Y-m'));

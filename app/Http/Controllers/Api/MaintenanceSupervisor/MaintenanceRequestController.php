@@ -20,28 +20,10 @@ class MaintenanceRequestController extends Controller
     ) {}
 
     /**
-     * Ensure the authenticated user has maintenance supervisor or general manager privileges.
-     */
-    protected function authorizeSupervisor(Request $request): ?JsonResponse
-    {
-        $user = $request->user();
-
-        if (! $user || (! $user->isMaintenanceSupervisor() && ! $user->isGeneralManager())) {
-            return ApiResponse::error('غير مصرح لك بالوصول إلى موديول مشرف الصيانة.', 403);
-        }
-
-        return null;
-    }
-
-    /**
      * Display a listing of tenant maintenance requests for supervisor review.
      */
     public function index(Request $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $result = $this->service->getListing(
             filters: [
                 'search' => $request->input('search'),
@@ -49,7 +31,7 @@ class MaintenanceRequestController extends Controller
                 'status' => $request->input('status'),
                 'owner_id' => $request->input('owner_id'),
             ],
-            perPage: $request->integer('per_page', 15)
+            perPage: min(max($request->integer('per_page', 15), 1), 100)
         );
 
         return ApiResponse::success([
@@ -69,10 +51,6 @@ class MaintenanceRequestController extends Controller
      */
     public function show(Request $request, MaintenanceRequest $maintenanceRequest): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $maintenanceRequest->load(['tenant.user', 'owner', 'reviewer']);
 
         return ApiResponse::success(
@@ -143,10 +121,6 @@ class MaintenanceRequestController extends Controller
      */
     public function destroy(Request $request, MaintenanceRequest $maintenanceRequest): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $this->service->delete($maintenanceRequest);
 
         return ApiResponse::success(null, 'تم حذف طلب الصيانة بنجاح.');

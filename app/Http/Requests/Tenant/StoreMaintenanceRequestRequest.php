@@ -33,8 +33,8 @@ class StoreMaintenanceRequestRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'address' => ['nullable', 'string', 'max:500'],
-            'attachments' => ['nullable', 'array'],
-            'attachments.*' => ['file', 'max:15360', 'mimes:jpeg,jpg,png,webp,gif,mp4,mov,avi,webm,pdf'],
+            'attachments' => ['nullable', 'array', 'max:5'],
+            'attachments.*' => ['file', 'max:10240', 'mimes:jpeg,jpg,png,webp,mp4,pdf'],
         ];
     }
 
@@ -54,7 +54,8 @@ class StoreMaintenanceRequestRequest extends FormRequest
             'property_unit.required' => 'العقار ورقم الوحدة مطلوب.',
             'title.required' => 'عنوان الطلب مطلوب.',
             'description.required' => 'وصف المشكلة مطلوب.',
-            'attachments.*.max' => 'الحد الأقصى لحجم كل ملف مرفق هو 15 ميجابايت.',
+            'attachments.max' => 'الحد الأقصى لعدد المرفقات هو 5 ملفات.',
+            'attachments.*.max' => 'الحد الأقصى لحجم كل ملف مرفق هو 10 ميجابايت.',
             'attachments.*.mimes' => 'نوع الملف المرفق غير مدعوم، يرجى رفع صور أو فيديو أو مستند PDF.',
         ];
     }

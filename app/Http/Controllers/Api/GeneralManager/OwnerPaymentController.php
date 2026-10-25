@@ -68,7 +68,7 @@ class OwnerPaymentController extends Controller
 
         $payments = $query->latest('payment_date')
             ->latest('id')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
         return ApiResponse::success([
             'payments' => PaymentResource::collection($payments),

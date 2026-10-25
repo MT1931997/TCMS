@@ -138,6 +138,18 @@ class GeneralManagerPaymentApiTest extends TestCase
         ]);
     }
 
+    public function test_supervisor_cannot_approve_already_reviewed_payment(): void
+    {
+        $this->payment->update(['status' => 'approved']);
+
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.payments.approvals.approve', $this->payment));
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'لا يمكن اعتماد سداد تمت مراجعته من قبل');
+    }
+
     public function test_supervisor_cannot_reject_without_reason(): void
     {
         $response = $this->actingAs($this->supervisor, 'sanctum')

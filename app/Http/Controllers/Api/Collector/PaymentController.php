@@ -8,9 +8,12 @@ use App\Http\Requests\Collector\StoreCollectorPaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Models\TenantInfo;
+use App\Services\DueScheduleService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class PaymentController extends Controller
 {
@@ -57,7 +60,7 @@ class PaymentController extends Controller
 
         $payments = $query->latest('payment_date')
             ->latest('id')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
         return ApiResponse::success([
             'payments' => PaymentResource::collection($payments),
@@ -135,11 +138,14 @@ class PaymentController extends Controller
 
         // Handle attachment file upload if present
         if ($request->hasFile('receipt_attachment')) {
-            $path = $request->file('receipt_attachment')->store('receipts', 'public');
+            $path = $request->file('receipt_attachment')->store('receipts', 'local');
             $validated['attachment_path'] = $path;
         }
 
         $payment = Payment::create($validated);
+        if (in_array($payment->status, ['completed', 'approved'])) {
+            app(DueScheduleService::class)->allocatePayment($payment);
+        }
         $payment->load(['tenant.user', 'collector']);
 
         return ApiResponse::success(
@@ -147,5 +153,21 @@ class PaymentController extends Controller
             'تم تسجيل دفعة السداد وإرسالها للمراجعة بنجاح.',
             201
         );
+    }
+
+    /**
+     * Download or view the payment receipt attachment.
+     */
+    public function attachment(Request $request, Payment $payment): Response
+    {
+        if ($request->user()->cannot('view', $payment)) {
+            return ApiResponse::error('ليس لديك صلاحية لعرض هذا المرفق.', 403);
+        }
+
+        if (! $payment->attachment_path || ! Storage::disk('local')->exists($payment->attachment_path)) {
+            return ApiResponse::error('المرفق غير موجود.', 404);
+        }
+
+        return Storage::disk('local')->download($payment->attachment_path);
     }
 }

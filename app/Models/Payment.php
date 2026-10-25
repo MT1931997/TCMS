@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'tenant_id',
+    'due_id',
     'collector_id',
     'amount',
     'payment_date',
@@ -47,6 +48,14 @@ class Payment extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(TenantInfo::class, 'tenant_id');
+    }
+
+    /**
+     * The specific due / installment this payment was allocated to.
+     */
+    public function due(): BelongsTo
+    {
+        return $this->belongsTo(Due::class, 'due_id');
     }
 
     /**

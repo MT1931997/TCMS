@@ -32,7 +32,7 @@ class PropertyController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->has('per_page') ? (int) $request->query('per_page') : null;
+        $perPage = $request->has('per_page') ? min(max($request->integer('per_page', 15), 1), 100) : null;
 
         $filters = [
             'search' => $request->query('search'),

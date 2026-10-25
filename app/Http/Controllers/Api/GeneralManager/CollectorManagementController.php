@@ -54,8 +54,8 @@ class CollectorManagementController extends Controller
             'owners' => User::where('type', UserType::Owner->value)->count(),
         ];
 
-        if ($perPage = $request->query('per_page')) {
-            $collectors = $query->latest('id')->paginate((int) $perPage);
+        if ($request->has('per_page')) {
+            $collectors = $query->latest('id')->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
             return ApiResponse::success([
                 'collectors' => UserResource::collection($collectors),
@@ -177,6 +177,10 @@ class CollectorManagementController extends Controller
         $collector->update([
             'is_active' => ! $collector->is_active,
         ]);
+
+        if (! $collector->is_active) {
+            $collector->tokens()->delete();
+        }
 
         $message = $collector->is_active
             ? 'تم تفعيل حساب المحصل بنجاح.'

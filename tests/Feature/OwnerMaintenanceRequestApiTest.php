@@ -216,4 +216,32 @@ class OwnerMaintenanceRequestApiTest extends TestCase
 
         $responseReject->assertStatus(403);
     }
+
+    public function test_owner_cannot_approve_or_reject_unapproved_or_already_decided_request(): void
+    {
+        // 1. Supervisor hasn't approved yet (PendingReview)
+        $unapprovedRequest = MaintenanceRequest::factory()->pendingReview()->create([
+            'owner_id' => $this->owner->id,
+        ]);
+
+        $response1 = $this->actingAs($this->owner, 'sanctum')
+            ->postJson(route('api.owner.maintenance-requests.approve', $unapprovedRequest), []);
+        $response1->assertStatus(422)
+            ->assertJsonPath('message', 'الطلب ده مش متاح لقرار المالك دلوقتي.');
+
+        // 2. Already approved by owner
+        $alreadyDecidedRequest = MaintenanceRequest::factory()->approvedByOwner()->create([
+            'owner_id' => $this->owner->id,
+        ]);
+
+        $response2 = $this->actingAs($this->owner, 'sanctum')
+            ->postJson(route('api.owner.maintenance-requests.approve', $alreadyDecidedRequest), []);
+        $response2->assertStatus(422)
+            ->assertJsonPath('message', 'الطلب ده مش متاح لقرار المالك دلوقتي.');
+
+        $response3 = $this->actingAs($this->owner, 'sanctum')
+            ->postJson(route('api.owner.maintenance-requests.reject', $alreadyDecidedRequest), []);
+        $response3->assertStatus(422)
+            ->assertJsonPath('message', 'الطلب ده مش متاح لقرار المالك دلوقتي.');
+    }
 }

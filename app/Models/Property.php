@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use App\Enums\UnitStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,30 @@ class Property extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Physical units within this property.
+     */
+    public function units(): HasMany
+    {
+        return $this->hasMany(Unit::class, 'property_id');
+    }
+
+    /**
+     * Vacant units within this property.
+     */
+    public function vacantUnits(): HasMany
+    {
+        return $this->units()->where('status', UnitStatus::Vacant);
+    }
+
+    /**
+     * Occupied units within this property.
+     */
+    public function occupiedUnits(): HasMany
+    {
+        return $this->units()->where('status', UnitStatus::Occupied);
     }
 
     /**

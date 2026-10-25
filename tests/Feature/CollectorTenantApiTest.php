@@ -252,7 +252,7 @@ class CollectorTenantApiTest extends TestCase
 
     public function test_collector_can_upload_payment_with_receipt_attachment(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $file = UploadedFile::fake()->image('receipt.jpg');
 
@@ -272,7 +272,12 @@ class CollectorTenantApiTest extends TestCase
         $payment = Payment::where('amount', 600)->first();
         $this->assertNotNull($payment);
         $this->assertNotNull($payment->attachment_path);
-        Storage::disk('public')->assertExists($payment->attachment_path);
+        Storage::disk('local')->assertExists($payment->attachment_path);
+
+        // Test downloading the attachment through the secure endpoint
+        $attachResponse = $this->actingAs($this->collectorA, 'sanctum')
+            ->get(route('api.payments.attachment', $payment));
+        $attachResponse->assertOk();
     }
 
     public function test_collector_cannot_upload_payment_for_unassigned_tenant(): void

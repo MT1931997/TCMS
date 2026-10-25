@@ -42,36 +42,23 @@ class AuthController extends Controller
                 ->first();
         }
 
-        if (! $user) {
+        if (! $user || ! Hash::check($validated['password'], $user->password) || ! $user->is_active) {
             return ApiResponse::error('بيانات الدخول غير صحيحة.', 422);
         }
 
         if (! empty($validated['type'])) {
             $typeInput = $validated['type'];
+            $matchesType = false;
             if (in_array($typeInput, ['supervisor', 'supervisors'], true)) {
-                if (! $user->isSupervisorType()) {
-                    return ApiResponse::error(
-                        'هذا الحساب غير مسجل كحساب مشرف.',
-                        403
-                    );
-                }
+                $matchesType = $user->isSupervisorType();
             } else {
                 $selectedType = UserType::tryFrom($typeInput);
-                if ($selectedType && $user->type !== $selectedType) {
-                    return ApiResponse::error(
-                        "هذا الحساب غير مسجل كـ {$selectedType->label()}.",
-                        403
-                    );
-                }
+                $matchesType = $selectedType && $user->type === $selectedType;
             }
-        }
 
-        if (! Hash::check($validated['password'], $user->password)) {
-            return ApiResponse::error('كلمة المرور غير صحيحة.', 422);
-        }
-
-        if (! $user->is_active) {
-            return ApiResponse::error('تم تعطيل هذا الحساب، يرجى مراجعة إدارة النظام.', 403);
+            if (! $matchesType) {
+                return ApiResponse::error('بيانات الدخول غير صحيحة.', 422);
+            }
         }
 
         $deviceName = $validated['device_name'] ?? 'tcms-frontend';

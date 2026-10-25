@@ -8,6 +8,7 @@ use App\Http\Requests\GeneralManager\RejectPaymentRequest;
 use App\Http\Requests\GeneralManager\UpdatePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Services\DueScheduleService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ class PaymentApprovalController extends Controller
 
         $payments = $query->latest('payment_date')
             ->latest('id')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
         return ApiResponse::success([
             'payments' => PaymentResource::collection($payments),
@@ -93,12 +94,18 @@ class PaymentApprovalController extends Controller
      */
     public function approve(Request $request, Payment $payment): JsonResponse
     {
+        if ($payment->status !== PaymentStatus::Pending->value) {
+            return ApiResponse::error('لا يمكن اعتماد سداد تمت مراجعته من قبل', 422);
+        }
+
         $payment->update([
             'status' => PaymentStatus::Approved->value,
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
             'rejection_reason' => null,
         ]);
+
+        app(DueScheduleService::class)->allocatePayment($payment);
 
         $payment->load(['tenant.user', 'tenant.owner', 'collector', 'reviewer']);
 

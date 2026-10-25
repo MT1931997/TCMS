@@ -25,7 +25,8 @@ class UpdateContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'unit_number' => ['sometimes', 'required', 'string', 'max:100'],
+            'unit_id' => ['sometimes', 'nullable', 'integer', 'exists:units,id'],
+            'unit_number' => ['sometimes', 'nullable', 'string', 'max:100'],
             'start_date' => ['sometimes', 'required', 'date'],
             'end_date' => ['sometimes', 'required', 'date', 'after_or_equal:start_date'],
             'total_amount' => ['sometimes', 'required', 'numeric', 'min:0'],

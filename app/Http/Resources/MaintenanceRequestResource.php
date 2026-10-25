@@ -33,32 +33,38 @@ class MaintenanceRequestResource extends JsonResource
 
         $ownerStatusEnum = $ownerStatusValue ? MaintenanceRequestOwnerStatus::tryFrom($ownerStatusValue) : null;
 
-        // Normalize attachments to always include absolute URLs
-        $attachments = array_map(function ($attachment) {
-            if (is_string($attachment)) {
-                return [
-                    'path' => $attachment,
-                    'url' => asset('storage/'.$attachment),
-                    'file_name' => basename($attachment),
-                    'file_type' => $this->detectFileType($attachment),
-                ];
+        // Normalize attachments to always include secure URLs
+        $rawAttachments = is_array($this->attachments) ? array_values($this->attachments) : [];
+        $attachments = [];
+        foreach ($rawAttachments as $index => $attachment) {
+            $path = is_array($attachment) ? ($attachment['path'] ?? null) : $attachment;
+            $url = $path ? route('api.maintenance-requests.attachment', [
+                'maintenanceRequest' => $this->id,
+                'index' => $index,
+            ]) : null;
+
+            if ($this->ticket_number && $url) {
+                $url .= '?ticket_number='.$this->ticket_number;
             }
 
-            if (is_array($attachment)) {
-                $path = $attachment['path'] ?? null;
-
-                return [
+            if (is_string($attachment)) {
+                $attachments[] = [
                     'path' => $path,
-                    'url' => $path ? asset('storage/'.$path) : ($attachment['url'] ?? null),
+                    'url' => $url,
+                    'file_name' => basename($path),
+                    'file_type' => $this->detectFileType($path),
+                ];
+            } elseif (is_array($attachment)) {
+                $attachments[] = [
+                    'path' => $path,
+                    'url' => $url,
                     'file_name' => $attachment['file_name'] ?? ($path ? basename($path) : 'file'),
                     'file_type' => $attachment['file_type'] ?? ($path ? $this->detectFileType($path) : 'file'),
                     'file_size' => $attachment['file_size'] ?? null,
                     'mime_type' => $attachment['mime_type'] ?? null,
                 ];
             }
-
-            return $attachment;
-        }, (array) ($this->attachments ?? []));
+        }
 
         $birthDate = $this->birth_date ? Carbon::parse($this->birth_date) : null;
         $createdAt = $this->created_at ? Carbon::parse($this->created_at) : null;

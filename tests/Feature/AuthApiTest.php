@@ -104,7 +104,7 @@ class AuthApiTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'كلمة المرور غير صحيحة.');
+            ->assertJsonPath('message', 'بيانات الدخول غير صحيحة.');
     }
 
     public function test_login_fails_when_user_type_does_not_match(): void
@@ -121,9 +121,27 @@ class AuthApiTest extends TestCase
             'type' => 'general_manager',
         ]);
 
-        $response->assertStatus(403)
+        $response->assertStatus(422)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'هذا الحساب غير مسجل كـ مشرف عام.');
+            ->assertJsonPath('message', 'بيانات الدخول غير صحيحة.');
+    }
+
+    public function test_inactive_user_cannot_login(): void
+    {
+        User::factory()->create([
+            'username' => 'inactive_user',
+            'password' => Hash::make('secret123'),
+            'is_active' => false,
+        ]);
+
+        $response = $this->postJson(route('api.auth.login'), [
+            'login' => 'inactive_user',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'بيانات الدخول غير صحيحة.');
     }
 
     public function test_authenticated_user_can_fetch_profile(): void
@@ -178,13 +196,14 @@ class AuthApiTest extends TestCase
             'type' => UserType::MaintenanceSupervisor,
             'is_active' => true,
         ]);
-        User::factory()->create([
+        $collector = User::factory()->create([
             'name' => 'محصل عادي',
             'type' => UserType::Collector,
             'is_active' => true,
         ]);
 
-        $response = $this->getJson(route('api.auth.users-by-type', ['type' => 'supervisor']));
+        $response = $this->actingAs($collector, 'sanctum')
+            ->getJson(route('api.auth.users-by-type', ['type' => 'supervisor']));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -226,5 +245,45 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.user.id', $supervisor->id)
             ->assertJsonPath('data.user.type', 'real_estate_supervisor');
+    }
+
+    public function test_login_is_rate_limited(): void
+    {
+        $user = User::factory()->create([
+            'username' => 'ratelimit_user',
+            'password' => Hash::make('secret123'),
+            'is_active' => true,
+        ]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson(route('api.auth.login'), [
+                'login' => 'ratelimit_user',
+                'password' => 'wrong',
+            ]);
+        }
+
+        $sixthResponse = $this->postJson(route('api.auth.login'), [
+            'login' => 'ratelimit_user',
+            'password' => 'wrong',
+        ]);
+
+        $sixthResponse->assertStatus(429);
+    }
+
+    public function test_deactivating_user_revokes_tokens(): void
+    {
+        $admin = User::factory()->generalManager()->create();
+        $collector = User::factory()->collector()->create(['is_active' => true]);
+        $collector->createToken('test-token');
+
+        $this->assertEquals(1, $collector->tokens()->count());
+
+        $this->actingAs($admin, 'sanctum')
+            ->patchJson(route('api.general-manager.collectors.toggle-status', $collector))
+            ->assertOk();
+
+        $collector->refresh();
+        $this->assertFalse($collector->is_active);
+        $this->assertEquals(0, $collector->tokens()->count());
     }
 }

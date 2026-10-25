@@ -458,6 +458,99 @@ class PropertyManagementApiTest extends TestCase
 
         $contract->refresh();
         $this->assertEquals(ContractStatus::Closed, $contract->status);
+        $this->assertEquals(0, $tenant->fresh()->monthly_target);
+    }
+
+    public function test_cannot_terminate_or_renew_non_active_contract(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-888',
+            'property_unit' => 'وحدة 5',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'status' => 'regular',
+        ]);
+
+        $closedContract = Contract::create([
+            'property_id' => $property->id,
+            'tenant_id' => $tenant->id,
+            'unit_number' => '5',
+            'start_date' => '2025-01-01',
+            'end_date' => '2025-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => PaymentCycle::Monthly,
+            'installment_amount' => 1000,
+            'claim_generation_mode' => ClaimGenerationMode::CurrentMonthOnly,
+            'status' => ContractStatus::Closed,
+        ]);
+
+        // Terminate non-active
+        $responseTerm = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.terminate', [$property, $closedContract]));
+        $responseTerm->assertStatus(422)
+            ->assertJsonValidationErrors(['contract']);
+
+        // Renew non-active
+        $responseRenew = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.renew', [$property, $closedContract]), [
+                'start_date' => '2026-01-01',
+                'end_date' => '2026-12-31',
+                'total_amount' => 12000,
+                'payment_cycle' => 'monthly',
+                'claim_generation_mode' => 'current_month_only',
+            ]);
+        $responseRenew->assertStatus(422)
+            ->assertJsonValidationErrors(['contract']);
+    }
+
+    public function test_cannot_create_two_active_contracts_on_same_unit(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-777',
+            'property_unit' => 'وحدة 8',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'status' => 'regular',
+        ]);
+
+        Contract::create([
+            'property_id' => $property->id,
+            'tenant_id' => $tenant->id,
+            'unit_number' => '8',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => PaymentCycle::Monthly,
+            'installment_amount' => 1000,
+            'claim_generation_mode' => ClaimGenerationMode::CurrentMonthOnly,
+            'status' => ContractStatus::Active,
+        ]);
+
+        $payload = [
+            'tenant_id' => $tenant->id,
+            'unit_number' => '8',
+            'start_date' => '2026-06-01',
+            'end_date' => '2027-05-31',
+            'total_amount' => 15000,
+            'payment_cycle' => 'monthly',
+            'claim_generation_mode' => 'current_month_only',
+        ];
+
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.store', $property), $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['unit_number']);
     }
 
     public function test_can_renew_contract(): void
@@ -519,5 +612,234 @@ class PropertyManagementApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('success', true);
+    }
+
+    public function test_cannot_delete_property_with_contracts(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-888',
+            'property_unit' => 'وحدة 1',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'property_id' => $property->id,
+            'status' => 'regular',
+        ]);
+
+        Contract::create([
+            'property_id' => $property->id,
+            'tenant_id' => $tenant->id,
+            'unit_number' => '1',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => PaymentCycle::Quarterly,
+            'installment_amount' => 3000,
+            'claim_generation_mode' => ClaimGenerationMode::CurrentMonthOnly,
+            'status' => ContractStatus::Active,
+        ]);
+
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->deleteJson(route('api.general-manager.properties.destroy', $property));
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['property'])
+            ->assertJsonPath('errors.property.0', 'لا يمكن حذف عقار عليه عقود. أنهِ العقود أو انقلها الأول.');
+
+        $this->assertDatabaseHas('properties', ['id' => $property->id]);
+    }
+
+    public function test_can_delete_property_without_contracts(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-889',
+            'property_unit' => 'وحدة 2',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'property_id' => $property->id,
+            'status' => 'regular',
+        ]);
+
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->deleteJson(route('api.general-manager.properties.destroy', $property));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseMissing('properties', ['id' => $property->id]);
+        $tenant->refresh();
+        $this->assertNull($tenant->property_id);
+    }
+
+    public function test_contract_monthly_target_normalized_for_non_monthly_cycles(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-990',
+            'property_unit' => 'وحدة 3',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 0,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'property_id' => $property->id,
+            'status' => 'regular',
+        ]);
+
+        $payload = [
+            'tenant_id' => $tenant->id,
+            'unit_number' => '3',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => 'quarterly',
+            'installment_amount' => 3000,
+            'claim_generation_mode' => 'current_month_only',
+        ];
+
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.store', $property), $payload);
+
+        $response->assertStatus(201);
+
+        $tenant->refresh();
+        // 3000 * 4 / 12 = 1000
+        $this->assertEquals(1000.0, (float) $tenant->monthly_target);
+    }
+
+    public function test_contract_overdue_amount_in_current_month_only_uses_monthly_target_for_quarterly_cycle(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-991',
+            'property_unit' => 'وحدة 4',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'property_id' => $property->id,
+            'status' => 'regular',
+        ]);
+
+        $contract = Contract::create([
+            'property_id' => $property->id,
+            'tenant_id' => $tenant->id,
+            'unit_number' => '4',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => PaymentCycle::Quarterly,
+            'installment_amount' => 3000,
+            'claim_generation_mode' => ClaimGenerationMode::CurrentMonthOnly,
+            'status' => ContractStatus::Active,
+        ]);
+
+        // Monthly target is 1000. With 0 payments, overdue should be 1000 (not 3000).
+        $this->assertEquals(1000.0, $contract->overdueAmount());
+
+        // Pay 400
+        Payment::create([
+            'tenant_id' => $tenant->id,
+            'collector_id' => $this->collector->id,
+            'amount' => 400,
+            'payment_date' => now()->format('Y-m-d'),
+            'period' => now()->format('Y-m'),
+            'payment_method' => 'cash',
+            'status' => PaymentStatus::Completed->value,
+        ]);
+
+        $this->assertEquals(600.0, $contract->overdueAmount());
+    }
+
+    public function test_route_scope_bindings_prevent_modifying_contract_of_another_property(): void
+    {
+        $propertyA = Property::factory()->create(['owner_id' => $this->owner1->id]);
+        $propertyB = Property::factory()->create(['owner_id' => $this->owner1->id]);
+
+        $tenantUser = User::factory()->tenant()->create();
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-999',
+            'property_unit' => 'وحدة 1',
+            'due_date' => '2026-10-10',
+            'monthly_target' => 1000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner1->id,
+            'property_id' => $propertyB->id,
+            'status' => 'regular',
+        ]);
+
+        $contractOnPropertyB = Contract::create([
+            'property_id' => $propertyB->id,
+            'tenant_id' => $tenant->id,
+            'unit_number' => '1',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => PaymentCycle::Monthly,
+            'installment_amount' => 1000,
+            'claim_generation_mode' => ClaimGenerationMode::CurrentMonthOnly,
+            'status' => ContractStatus::Active,
+        ]);
+
+        // Attempting to update contract of Property B via Property A route
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->putJson(route('api.general-manager.properties.contracts.update', [$propertyA, $contractOnPropertyB]), [
+                'unit_number' => '2',
+            ]);
+
+        $response->assertNotFound();
+
+        // Attempting to terminate contract of Property B via Property A route
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.terminate', [$propertyA, $contractOnPropertyB]), [
+                'reason' => 'test',
+            ]);
+
+        $response->assertNotFound();
+    }
+
+    public function test_contract_number_and_tenant_number_are_generated_from_ids(): void
+    {
+        $property = Property::factory()->create(['owner_id' => $this->owner1->id]);
+
+        $payload = [
+            'is_new_tenant' => true,
+            'name' => 'مستأجر جديد للاختبار',
+            'phone' => '0599999999',
+            'collector_id' => $this->collector->id,
+            'unit_number' => '10',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 12000,
+            'payment_cycle' => 'monthly',
+            'claim_generation_mode' => 'current_month_only',
+        ];
+
+        $response = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.properties.contracts.store', $property), $payload);
+
+        $response->assertStatus(201);
+
+        $createdContract = Contract::latest('id')->first();
+        $createdTenant = TenantInfo::latest('id')->first();
+
+        $expectedContractNumber = sprintf('CNT-%s-%05d', now()->format('Ym'), $createdContract->id);
+        $expectedTenantNumber = 'T-'.(1000 + $createdTenant->id);
+
+        $this->assertEquals($expectedContractNumber, $createdContract->contract_number);
+        $this->assertEquals($expectedTenantNumber, $createdTenant->tenant_number);
     }
 }

@@ -23,8 +23,8 @@ class TrackMaintenanceRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'national_id' => ['required_without_all:phone,ticket_number', 'nullable', 'string', 'max:50'],
-            'phone' => ['required_without_all:national_id,ticket_number', 'nullable', 'string', 'max:50'],
+            'national_id' => ['required', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:50'],
             'ticket_number' => ['nullable', 'string', 'max:50'],
         ];
     }
@@ -37,8 +37,7 @@ class TrackMaintenanceRequestRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'national_id.required_without_all' => 'يرجى إدخال رقم الهوية أو رقم الجوال أو رقم الطلب لتتبع حالة طلباتك.',
-            'phone.required_without_all' => 'يرجى إدخال رقم الهوية أو رقم الجوال أو رقم الطلب لتتبع حالة طلباتك.',
+            'national_id.required' => 'يرجى إدخال رقم الهوية الوطنية.',
         ];
     }
 }

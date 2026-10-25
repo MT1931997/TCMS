@@ -60,8 +60,8 @@ class SupervisorManagementController extends Controller
         ];
 
         // Optional pagination or full list
-        if ($perPage = $request->query('per_page')) {
-            $supervisors = $query->latest('id')->paginate((int) $perPage);
+        if ($request->has('per_page')) {
+            $supervisors = $query->latest('id')->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
             return ApiResponse::success([
                 'supervisors' => UserResource::collection($supervisors),
@@ -191,6 +191,10 @@ class SupervisorManagementController extends Controller
         $supervisor->update([
             'is_active' => ! $supervisor->is_active,
         ]);
+
+        if (! $supervisor->is_active) {
+            $supervisor->tokens()->delete();
+        }
 
         $message = $supervisor->is_active
             ? 'تم تفعيل حساب المشرف بنجاح.'

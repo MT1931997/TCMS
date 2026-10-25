@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ClaimGenerationMode;
 use App\Enums\ContractStatus;
+use App\Enums\DueStatus;
 use App\Enums\PaymentCycle;
 use App\Enums\PaymentStatus;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'contract_number',
     'property_id',
     'tenant_id',
+    'unit_id',
     'unit_number',
     'start_date',
     'end_date',
@@ -55,6 +57,22 @@ class Contract extends Model
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class, 'property_id');
+    }
+
+    /**
+     * The physical unit leased under this contract.
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    /**
+     * Financial dues/installments scheduled for this contract.
+     */
+    public function dues(): HasMany
+    {
+        return $this->hasMany(Due::class, 'contract_id')->orderBy('due_date');
     }
 
     /**
@@ -98,6 +116,12 @@ class Contract extends Model
             return 0;
         }
 
+        if ($this->relationLoaded('tenant') && $this->tenant?->relationLoaded('payments')) {
+            return (float) $this->tenant->payments
+                ->filter(fn ($p) => $p->payment_date->between($this->start_date, $this->end_date))
+                ->sum('amount');
+        }
+
         return (float) Payment::query()
             ->where('tenant_id', $this->tenant_id)
             ->whereBetween('payment_date', [$this->start_date->format('Y-m-d'), $this->end_date->format('Y-m-d')])
@@ -121,16 +145,56 @@ class Contract extends Model
         $installment = (float) $this->installment_amount;
         $now = now();
 
+        // 1. Direct query on dues table (Indexed, auditable, and fast)
+        if ($this->dues()->exists()) {
+            if ($mode === ClaimGenerationMode::CurrentMonthOnly) {
+                $currentPeriod = $now->format('Y-m');
+                $monthDue = $this->dues()->where('period', $currentPeriod)->first();
+
+                if ($monthDue) {
+                    return $monthDue->remainingAmount();
+                }
+            }
+
+            if ($mode === ClaimGenerationMode::FromStartDate) {
+                if ($this->start_date->isFuture()) {
+                    return 0;
+                }
+
+                return (float) $this->dues()
+                    ->where('due_date', '<=', $now->format('Y-m-d'))
+                    ->where('status', '!=', DueStatus::Paid->value)
+                    ->get()
+                    ->sum(fn (Due $d) => $d->remainingAmount());
+            }
+        }
+
+        // 2. Fallback calculation for legacy records without generated dues
         if ($mode === ClaimGenerationMode::CurrentMonthOnly) {
             // Overdue is based on current month's installment
             $currentPeriod = $now->format('Y-m');
-            $paidThisMonth = (float) Payment::query()
-                ->where('tenant_id', $this->tenant_id)
-                ->where('period', $currentPeriod)
-                ->whereIn('status', [PaymentStatus::Completed->value, PaymentStatus::Approved->value])
-                ->sum('amount');
 
-            return max(0, $installment - $paidThisMonth);
+            if ($this->relationLoaded('tenant') && $this->tenant?->relationLoaded('payments')) {
+                $paidThisMonth = (float) $this->tenant->payments
+                    ->filter(fn ($p) => $p->period === $currentPeriod)
+                    ->sum('amount');
+            } else {
+                $paidThisMonth = (float) Payment::query()
+                    ->where('tenant_id', $this->tenant_id)
+                    ->where('period', $currentPeriod)
+                    ->whereIn('status', [PaymentStatus::Completed->value, PaymentStatus::Approved->value])
+                    ->sum('amount');
+            }
+
+            $cycle = $this->payment_cycle instanceof PaymentCycle
+                ? $this->payment_cycle
+                : PaymentCycle::tryFrom((string) $this->payment_cycle);
+
+            $monthlyTarget = $cycle
+                ? round($installment * $cycle->periodsPerYear() / 12, 2)
+                : $installment;
+
+            return max(0, $monthlyTarget - $paidThisMonth);
         }
 
         if ($mode === ClaimGenerationMode::FromStartDate) {
@@ -165,5 +229,13 @@ class Contract extends Model
         }
 
         return 0;
+    }
+
+    /**
+     * Get unit number directly from related unit entity as single source of truth.
+     */
+    public function getUnitNumberAttribute(): ?string
+    {
+        return $this->unit?->unit_number ?? ($this->attributes['unit_number'] ?? null);
     }
 }

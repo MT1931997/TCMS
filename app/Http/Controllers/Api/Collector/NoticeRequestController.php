@@ -55,7 +55,7 @@ class NoticeRequestController extends Controller
         $approvedCount = (clone $query)->where('status', NoticeRequestStatus::Approved->value)->count();
 
         $requests = $query->latest()
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
         return ApiResponse::success([
             'requests' => NoticeRequestResource::collection($requests),

@@ -28,29 +28,11 @@ class PropertyController extends Controller
     ) {}
 
     /**
-     * Ensure the user has real estate supervisor or general manager privileges.
-     */
-    protected function authorizeSupervisor(Request $request): ?JsonResponse
-    {
-        $user = $request->user();
-
-        if (! $user || (! $user->isRealEstateSupervisor() && ! $user->isGeneralManager())) {
-            return ApiResponse::error('غير مصرح لك بالوصول إلى موديول مشرف العقارات.', 403);
-        }
-
-        return null;
-    }
-
-    /**
      * Display a listing of properties for real estate supervisor.
      */
     public function index(Request $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
-        $perPage = $request->has('per_page') ? (int) $request->query('per_page') : null;
+        $perPage = $request->has('per_page') ? min(max($request->integer('per_page', 15), 1), 100) : null;
 
         $filters = [
             'search' => $request->query('search'),
@@ -83,10 +65,6 @@ class PropertyController extends Controller
      */
     public function store(StorePropertyRequest $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $property = $this->propertyService->create(
             $request->validated(),
             $request->user()
@@ -106,10 +84,6 @@ class PropertyController extends Controller
      */
     public function show(Request $request, Property $property): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $details = $this->propertyService->getPropertyDetails(
             $property,
             $request->query('period')
@@ -129,10 +103,6 @@ class PropertyController extends Controller
      */
     public function update(UpdatePropertyRequest $request, Property $property): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $updatedProperty = $this->propertyService->update(
             $property,
             $request->validated()
@@ -149,10 +119,6 @@ class PropertyController extends Controller
      */
     public function destroy(Request $request, Property $property): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $this->propertyService->delete($property);
 
         return ApiResponse::success(null, 'تم حذف العقار بنجاح.');
@@ -163,10 +129,6 @@ class PropertyController extends Controller
      */
     public function contractOptions(Request $request, Property $property): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $options = $this->propertyService->getContractOptions($property);
 
         return ApiResponse::success($options, 'خيارات نموذج إضافة العقد.');
@@ -177,10 +139,6 @@ class PropertyController extends Controller
      */
     public function storeContract(StoreContractRequest $request, Property $property): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $contract = $this->propertyService->createContract(
             $property,
             $request->validated(),
@@ -199,10 +157,6 @@ class PropertyController extends Controller
      */
     public function updateContract(UpdateContractRequest $request, Property $property, Contract $contract): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $updatedContract = $this->propertyService->updateContract(
             $contract,
             $request->validated()
@@ -219,10 +173,6 @@ class PropertyController extends Controller
      */
     public function terminateContract(TerminateContractRequest $request, Property $property, Contract $contract): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $terminatedContract = $this->propertyService->terminateContract(
             $contract,
             $request->input('closure_reason')
@@ -239,10 +189,6 @@ class PropertyController extends Controller
      */
     public function renewContract(RenewContractRequest $request, Property $property, Contract $contract): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $newContract = $this->propertyService->renewContract(
             $contract,
             $request->validated(),

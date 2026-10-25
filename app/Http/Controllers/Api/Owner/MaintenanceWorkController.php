@@ -31,7 +31,7 @@ class MaintenanceWorkController extends Controller
                 'search' => $request->input('search'),
                 'tab' => $request->input('tab'),
             ],
-            perPage: $request->integer('per_page', 15)
+            perPage: min(max($request->integer('per_page', 15), 1), 100)
         );
 
         if (isset($result['pending_works'])) {

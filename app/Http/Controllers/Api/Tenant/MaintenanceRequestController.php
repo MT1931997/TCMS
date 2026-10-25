@@ -7,12 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StoreMaintenanceRequestRequest;
 use App\Http\Requests\Tenant\TrackMaintenanceRequestRequest;
 use App\Http\Resources\MaintenanceRequestResource;
+use App\Http\Resources\PublicMaintenanceRequestResource;
 use App\Models\MaintenanceRequest;
 use App\Models\TenantInfo;
-use App\Models\User;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class MaintenanceRequestController extends Controller
 {
@@ -23,12 +27,12 @@ class MaintenanceRequestController extends Controller
     {
         $validated = $request->validated();
 
-        // Check if there is an existing registered tenant matching national_id
-        $tenant = TenantInfo::where('national_id', $validated['national_id'])->first();
-        if (! $tenant) {
-            $userWithNationalId = User::where('national_id', $validated['national_id'])->with('tenantInfo')->first();
-            $tenant = $userWithNationalId?->tenantInfo;
-        }
+        // الربط بيحصل لو الرقم القومي + الموبايل + تاريخ الميلاد كلهم مطابقين
+        // غير كده الطلب بتسجل من غير ربط، والمشرف يربطه بإيده بعد المراجعة
+        $tenant = TenantInfo::where('national_id', $validated['national_id'])
+            ->whereDate('birth_date', $validated['birth_date'])
+            ->whereHas('user', fn ($q) => $q->where('phone', $validated['phone']))
+            ->first();
 
         $tenantId = $tenant?->id;
         $ownerId = $tenant?->owner_id;
@@ -43,7 +47,7 @@ class MaintenanceRequestController extends Controller
 
             foreach ($files as $file) {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $path = $file->store('maintenance_requests', 'public');
+                    $path = $file->store('maintenance_requests', 'local');
                     $savedAttachments[] = [
                         'path' => $path,
                         'file_name' => $file->getClientOriginalName(),
@@ -90,54 +94,77 @@ class MaintenanceRequestController extends Controller
      */
     public function track(TrackMaintenanceRequestRequest $request): JsonResponse
     {
-        $query = MaintenanceRequest::query()->with(['tenant.user', 'owner']);
+        $validated = $request->validated();
 
-        $nationalId = $request->input('national_id');
-        $phone = $request->input('phone');
-        $ticketNumber = $request->input('ticket_number');
+        $query = MaintenanceRequest::query()
+            ->where('national_id', $validated['national_id']);
 
-        $query->where(function ($q) use ($nationalId, $phone, $ticketNumber) {
-            if (! empty($ticketNumber)) {
-                $q->where('ticket_number', $ticketNumber);
-            }
+        if (! empty($validated['phone'])) {
+            $query->where('phone', $validated['phone']);
+        }
 
-            if (! empty($nationalId) && ! empty($phone)) {
-                $q->where(function ($sub) use ($nationalId, $phone) {
-                    $sub->where('national_id', $nationalId)
-                        ->orWhere('phone', $phone);
-                });
-            } elseif (! empty($nationalId)) {
-                $q->where('national_id', $nationalId);
-            } elseif (! empty($phone)) {
-                $q->where('phone', $phone);
-            }
-        });
+        if (! empty($validated['ticket_number'])) {
+            $query->where('ticket_number', $validated['ticket_number']);
+        }
 
         $requests = $query->latest('id')->get();
 
         return ApiResponse::success(
-            MaintenanceRequestResource::collection($requests),
+            PublicMaintenanceRequestResource::collection($requests),
             'تم جلب طلبات الصيانة بنجاح.'
         );
     }
 
     /**
-     * Show single maintenance request by ticket number or ID.
+     * Show single maintenance request by ticket number and national ID.
      */
-    public function show(string $ticketNumber): JsonResponse
+    public function show(TrackMaintenanceRequestRequest $request, string $ticketNumber): JsonResponse
     {
-        $request = MaintenanceRequest::with(['tenant.user', 'owner', 'reviewer'])
-            ->where('ticket_number', $ticketNumber)
-            ->orWhere('id', $ticketNumber)
+        $maintenanceRequest = MaintenanceRequest::where('ticket_number', $ticketNumber)
+            ->where('national_id', $request->validated('national_id'))
             ->first();
 
-        if (! $request) {
-            return ApiResponse::error('طلب الصيانة غير موجود.', 404);
+        return $maintenanceRequest
+            ? ApiResponse::success(new PublicMaintenanceRequestResource($maintenanceRequest))
+            : ApiResponse::error('طلب الصيانة غير موجود.', 404);
+    }
+
+    /**
+     * Download or view maintenance request attachment securely.
+     */
+    public function attachment(Request $request, MaintenanceRequest $maintenanceRequest, int $index): Response
+    {
+        $user = $request->user('sanctum');
+
+        $isAuthorized = false;
+        if ($user && Gate::forUser($user)->allows('viewAttachment', $maintenanceRequest)) {
+            $isAuthorized = true;
+        } elseif ($request->filled('ticket_number') && $request->input('ticket_number') === $maintenanceRequest->ticket_number) {
+            $isAuthorized = true;
         }
 
-        return ApiResponse::success(
-            new MaintenanceRequestResource($request),
-            'تفاصيل طلب الصيانة.'
-        );
+        if (! $isAuthorized) {
+            return ApiResponse::error('ليس لديك صلاحية لعرض هذا المرفق.', 403);
+        }
+
+        $attachments = is_array($maintenanceRequest->attachments) ? array_values($maintenanceRequest->attachments) : [];
+        $attachment = $attachments[$index] ?? null;
+
+        if (! $attachment) {
+            return ApiResponse::error('المرفق غير موجود.', 404);
+        }
+
+        $path = is_array($attachment) ? ($attachment['path'] ?? null) : $attachment;
+        $fileName = is_array($attachment) ? ($attachment['file_name'] ?? basename($path)) : basename($path);
+
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return ApiResponse::error('المرفق غير موجود.', 404);
+        }
+
+        if ($request->boolean('download')) {
+            return Storage::disk('local')->download($path, $fileName);
+        }
+
+        return Storage::disk('local')->response($path, $fileName);
     }
 }

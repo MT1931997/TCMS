@@ -7,6 +7,7 @@ use App\Enums\MaintenanceRequestSupervisorStatus;
 use App\Models\MaintenanceRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<MaintenanceRequest>
@@ -23,7 +24,7 @@ class MaintenanceRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'ticket_number' => 'MNT-'.now()->format('Ym').'-'.fake()->unique()->numberBetween(1000, 999999),
+            'ticket_number' => 'MNT-'.Str::upper(Str::random(10)),
             'tenant_name' => fake()->name(),
             'national_id' => (string) fake()->numberBetween(1000000000, 2999999999),
             'birth_date' => fake()->date('Y-m-d', '-20 years'),

@@ -29,7 +29,8 @@ class StoreContractRequest extends FormRequest
 
         $rules = [
             'is_new_tenant' => ['boolean'],
-            'unit_number' => ['required', 'string', 'max:100'],
+            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'unit_number' => ['required_without:unit_id', 'nullable', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'total_amount' => ['required', 'numeric', 'min:0'],
@@ -65,6 +66,7 @@ class StoreContractRequest extends FormRequest
     {
         return [
             'unit_number.required' => 'رقم الوحدة مطلوب.',
+            'unit_number.required_without' => 'رقم الوحدة أو معرف الوحدة مطلوب.',
             'start_date.required' => 'تاريخ بداية العقد مطلوب.',
             'start_date.date' => 'تاريخ بداية العقد غير صالح.',
             'end_date.required' => 'تاريخ انتهاء العقد مطلوب.',

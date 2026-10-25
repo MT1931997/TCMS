@@ -97,7 +97,15 @@ class TenantImportService
                         || (string) $c->id === $collectorVal;
                 });
             }
-            $collectorId = $collector?->id ?? $defaultCollector->id;
+
+            if (! $collector) {
+                $failed++;
+                $errors[] = ['row' => $row, 'error' => "المحصل \"{$collectorVal}\" غير موجود في السطر {$row}"];
+
+                continue;
+            }
+
+            $collectorId = $collector->id;
 
             // Match Owner by name, username, or id
             $owner = null;

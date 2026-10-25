@@ -61,7 +61,7 @@ class MaintenanceRequestController extends Controller
                 ->where('owner_status', MaintenanceRequestOwnerStatus::Pending->value)
                 ->latest('reviewed_at')
                 ->latest('id')
-                ->paginate($request->integer('per_page', 15));
+                ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
             return ApiResponse::success([
                 'requests' => MaintenanceRequestResource::collection($pendingRequests),
@@ -89,7 +89,7 @@ class MaintenanceRequestController extends Controller
                 ])
                 ->latest('owner_decision_at')
                 ->latest('id')
-                ->paginate($request->integer('per_page', 15));
+                ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
             return ApiResponse::success([
                 'requests' => MaintenanceRequestResource::collection($historyRequests),
@@ -164,6 +164,11 @@ class MaintenanceRequestController extends Controller
             return ApiResponse::error('غير مصرح لك باتخاذ قرار بشأن هذا الطلب.', 403);
         }
 
+        if ($maintenanceRequest->supervisor_status !== MaintenanceRequestSupervisorStatus::Approved
+            || $maintenanceRequest->owner_status !== MaintenanceRequestOwnerStatus::Pending) {
+            return ApiResponse::error('الطلب ده مش متاح لقرار المالك دلوقتي.', 422);
+        }
+
         $maintenanceRequest->update([
             'owner_status' => MaintenanceRequestOwnerStatus::Approved->value,
             'owner_decision_at' => now(),
@@ -186,6 +191,11 @@ class MaintenanceRequestController extends Controller
     {
         if ($maintenanceRequest->owner_id !== $request->user()->id) {
             return ApiResponse::error('غير مصرح لك باتخاذ قرار بشأن هذا الطلب.', 403);
+        }
+
+        if ($maintenanceRequest->supervisor_status !== MaintenanceRequestSupervisorStatus::Approved
+            || $maintenanceRequest->owner_status !== MaintenanceRequestOwnerStatus::Pending) {
+            return ApiResponse::error('الطلب ده مش متاح لقرار المالك دلوقتي.', 422);
         }
 
         $rejectionReason = $request->validated('rejection_reason') ?? $request->validated('notes');

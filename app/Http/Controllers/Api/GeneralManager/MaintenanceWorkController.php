@@ -30,7 +30,7 @@ class MaintenanceWorkController extends Controller
                 'status' => $request->input('status'),
                 'owner_id' => $request->input('owner_id'),
             ],
-            perPage: $request->integer('per_page', 15)
+            perPage: min(max($request->integer('per_page', 15), 1), 100)
         );
 
         return ApiResponse::success([

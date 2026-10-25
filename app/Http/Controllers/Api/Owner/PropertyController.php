@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Owner;
 
 use App\Enums\TenantStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Property;
 use App\Models\TenantInfo;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -23,24 +24,47 @@ class PropertyController extends Controller
             ->where('owner_id', $owner->id)
             ->get();
 
-        // 1. Group by property name if units are named like "برج الامل - شقة 1" or distinct property_unit
-        $properties = $tenants->groupBy(function ($tenant) {
-            // Extract building/property name before hyphen if format is "برج X - شقة Y"
-            $parts = explode('-', $tenant->property_unit);
+        $ownerProperties = Property::with(['units', 'activeContracts', 'tenants'])
+            ->where('owner_id', $owner->id)
+            ->get();
 
-            return trim($parts[0] ?: $tenant->property_unit);
-        })->map(function ($units, $propertyName) use ($period) {
-            $totalTarget = (float) $units->sum('monthly_target');
-            $totalPaid = (float) $units->sum(fn ($tenant) => $tenant->paidForPeriod($period));
+        if ($ownerProperties->isNotEmpty()) {
+            $properties = $ownerProperties->map(function (Property $property) use ($period) {
+                $totalTarget = (float) $property->activeContracts()->get()->sum(function ($c) {
+                    return $c->payment_cycle
+                        ? round((float) $c->installment_amount * $c->payment_cycle->periodsPerYear() / 12, 2)
+                        : (float) $c->installment_amount;
+                });
+                $totalPaid = $property->collectedAmountForPeriod($period);
+                $unitsCount = $property->units()->count() ?: $property->tenants()->count();
 
-            return [
-                'name' => $propertyName,
-                'units_count' => $units->count(),
-                'total_monthly_target' => $totalTarget,
-                'total_collected' => $totalPaid,
-                'collection_percentage' => $totalTarget > 0 ? round(($totalPaid / $totalTarget) * 100, 1) : 0,
-            ];
-        })->values();
+                return [
+                    'name' => $property->name,
+                    'units_count' => $unitsCount,
+                    'total_monthly_target' => $totalTarget,
+                    'total_collected' => $totalPaid,
+                    'collection_percentage' => $totalTarget > 0 ? round(($totalPaid / $totalTarget) * 100, 1) : 0,
+                ];
+            })->values();
+        } else {
+            // Fallback for legacy standalone tenant_info records without a property entity
+            $properties = $tenants->groupBy(function ($tenant) {
+                $parts = explode('-', $tenant->property_unit);
+
+                return trim($parts[0] ?: $tenant->property_unit);
+            })->map(function ($units, $propertyName) use ($period) {
+                $totalTarget = (float) $units->sum('monthly_target');
+                $totalPaid = (float) $units->sum(fn ($tenant) => $tenant->paidForPeriod($period));
+
+                return [
+                    'name' => $propertyName,
+                    'units_count' => $units->count(),
+                    'total_monthly_target' => $totalTarget,
+                    'total_collected' => $totalPaid,
+                    'collection_percentage' => $totalTarget > 0 ? round(($totalPaid / $totalTarget) * 100, 1) : 0,
+                ];
+            })->values();
+        }
 
         // 2. Tenants table: "مستأجرو وحداتي – المستهدف والمحصل لشهر X"
         $tenantsData = $tenants->map(function ($tenant) use ($period) {

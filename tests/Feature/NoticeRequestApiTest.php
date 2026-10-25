@@ -210,6 +210,39 @@ class NoticeRequestApiTest extends TestCase
         ]);
     }
 
+    public function test_supervisor_cannot_approve_delivery_if_not_pending_or_without_proof(): void
+    {
+        $noticeRequestNoProof = NoticeRequest::create([
+            'tenant_id' => $this->tenant->id,
+            'collector_id' => $this->collector->id,
+            'supervisor_id' => $this->supervisor->id,
+            'reason' => 'تأخر السداد',
+            'status' => NoticeRequestStatus::PendingApproval,
+            'delivery_proof_path' => null,
+        ]);
+
+        $responseNoProof = $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.notice-requests.approve-delivery', $noticeRequestNoProof));
+
+        $responseNoProof->assertStatus(422)
+            ->assertJsonPath('message', 'لا يمكن اعتماد التسليم دون وجود إثبات تسليم مرفوع مسبقاً.');
+
+        $noticeRequestWrongStatus = NoticeRequest::create([
+            'tenant_id' => $this->tenant->id,
+            'collector_id' => $this->collector->id,
+            'supervisor_id' => $this->supervisor->id,
+            'reason' => 'تأخر السداد',
+            'status' => NoticeRequestStatus::Issued,
+            'delivery_proof_path' => 'notice_delivery_proofs/sample.jpg',
+        ]);
+
+        $responseWrongStatus = $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.notice-requests.approve-delivery', $noticeRequestWrongStatus));
+
+        $responseWrongStatus->assertStatus(422)
+            ->assertJsonPath('message', 'لا يمكن اعتماد التسليم دون وجود إثبات تسليم مرفوع مسبقاً.');
+    }
+
     public function test_supervisor_can_reject_notice_request_with_reason(): void
     {
         $noticeRequest = NoticeRequest::create([

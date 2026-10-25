@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('maintenance_works', function (Blueprint $table) {
             $table->id();
             $table->string('work_order_number')->unique()->index();
-            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('owner_id')->constrained('users')->restrictOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('maintenance_request_id')->nullable()->constrained('maintenance_requests')->nullOnDelete();
             $table->string('property_unit');

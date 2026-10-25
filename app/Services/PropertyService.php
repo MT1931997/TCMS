@@ -6,17 +6,20 @@ use App\Enums\ClaimGenerationMode;
 use App\Enums\ContractStatus;
 use App\Enums\PaymentCycle;
 use App\Enums\PaymentStatus;
+use App\Enums\UnitStatus;
 use App\Enums\UserType;
 use App\Models\Contract;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\TenantInfo;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PropertyService
 {
@@ -146,6 +149,12 @@ class PropertyService
      */
     public function delete(Property $property): void
     {
+        if ($property->contracts()->exists()) {
+            throw ValidationException::withMessages([
+                'property' => 'لا يمكن حذف عقار عليه عقود. أنهِ العقود أو انقلها الأول.',
+            ]);
+        }
+
         DB::transaction(function () use ($property) {
             TenantInfo::where('property_id', $property->id)->update(['property_id' => null]);
             $property->delete();
@@ -167,7 +176,10 @@ class PropertyService
         // 1. Active Contracts
         $activeContracts = $property->contracts()
             ->where('status', ContractStatus::Active->value)
-            ->with(['tenant.user'])
+            ->with([
+                'tenant.user',
+                'tenant.payments' => fn ($q) => $q->whereIn('status', [PaymentStatus::Completed->value, PaymentStatus::Approved->value]),
+            ])
             ->latest('id')
             ->get();
 
@@ -216,7 +228,10 @@ class PropertyService
         // 3. Previous contracts log (renewed and closed) ("سجل العقود السابقة (المجددة والمغلقة)")
         $previousContracts = $property->contracts()
             ->whereIn('status', [ContractStatus::Renewed->value, ContractStatus::Closed->value])
-            ->with(['tenant.user'])
+            ->with([
+                'tenant.user',
+                'tenant.payments' => fn ($q) => $q->whereIn('status', [PaymentStatus::Completed->value, PaymentStatus::Approved->value]),
+            ])
             ->latest('id')
             ->get();
 
@@ -288,7 +303,57 @@ class PropertyService
      */
     public function createContract(Property $property, array $data, User $creator): Contract
     {
-        return DB::transaction(function () use ($property, $data, $creator) {
+        if (! empty($data['unit_id'])) {
+            $unit = Unit::findOrFail($data['unit_id']);
+            $targetUnitNumber = $unit->unit_number;
+            $targetUnitId = $unit->id;
+        } else {
+            $targetUnitNumber = $data['unit_number'];
+            $targetUnitId = null;
+        }
+
+        $unitIsTaken = Contract::where('property_id', $property->id)
+            ->where(function ($q) use ($targetUnitId, $targetUnitNumber) {
+                if ($targetUnitId) {
+                    $q->where('unit_id', $targetUnitId)->orWhere('unit_number', $targetUnitNumber);
+                } else {
+                    $q->where('unit_number', $targetUnitNumber);
+                }
+            })
+            ->where('status', ContractStatus::Active)
+            ->where('start_date', '<=', $data['end_date'])
+            ->where('end_date', '>=', $data['start_date'])
+            ->exists();
+
+        if ($unitIsTaken) {
+            throw ValidationException::withMessages([
+                'unit_number' => 'الوحدة عليها عقد سارٍ في نفس الفترة.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($property, $data, $creator, $targetUnitNumber, $targetUnitId) {
+            $paymentCycle = PaymentCycle::from($data['payment_cycle']);
+            $totalAmount = (float) $data['total_amount'];
+            $installmentAmount = isset($data['installment_amount']) && (float) $data['installment_amount'] > 0
+                ? (float) $data['installment_amount']
+                : $paymentCycle->calculateInstallment($totalAmount);
+
+            if ($targetUnitId) {
+                $unit = Unit::findOrFail($targetUnitId);
+                $unit->update(['status' => UnitStatus::Occupied]);
+                $unitNumber = $unit->unit_number;
+            } else {
+                $unitNumber = $targetUnitNumber;
+                $unit = Unit::firstOrCreate([
+                    'property_id' => $property->id,
+                    'unit_number' => $unitNumber,
+                ], [
+                    'status' => UnitStatus::Occupied,
+                    'rent_price' => $installmentAmount,
+                ]);
+                $unit->update(['status' => UnitStatus::Occupied]);
+            }
+
             $isNewTenant = ! empty($data['is_new_tenant']);
 
             if ($isNewTenant) {
@@ -302,22 +367,23 @@ class PropertyService
                     'is_active' => true,
                 ]);
 
-                $tenantNumber = 'T-'.((TenantInfo::max('id') ?? 0) + 1000);
-
                 $tenant = TenantInfo::create([
                     'user_id' => $user->id,
-                    'tenant_number' => $tenantNumber,
+                    'tenant_number' => null,
                     'property_id' => $property->id,
                     'owner_id' => $property->owner_id,
                     'collector_id' => $data['collector_id'],
                     'supervisor_id' => $creator->id,
-                    'property_unit' => $property->name.' - وحدة '.$data['unit_number'],
+                    'property_unit' => $property->name.' - وحدة '.$unitNumber,
                     'due_date' => $data['start_date'],
-                    'monthly_target' => $data['installment_amount'] ?? 0,
+                    'monthly_target' => $installmentAmount,
                     'national_id' => $data['national_id'] ?? null,
                     'birth_date' => $data['birth_date'] ?? null,
                     'status' => 'regular',
                 ]);
+
+                $tenantNumber = 'T-'.(1000 + $tenant->id);
+                $tenant->update(['tenant_number' => $tenantNumber]);
                 $tenantId = $tenant->id;
             } else {
                 $tenantId = (int) $data['tenant_id'];
@@ -325,23 +391,16 @@ class PropertyService
                 $tenant->update([
                     'property_id' => $property->id,
                     'owner_id' => $property->owner_id,
-                    'property_unit' => $property->name.' - وحدة '.$data['unit_number'],
+                    'property_unit' => $property->name.' - وحدة '.$unitNumber,
                 ]);
             }
 
-            $paymentCycle = PaymentCycle::from($data['payment_cycle']);
-            $totalAmount = (float) $data['total_amount'];
-            $installmentAmount = isset($data['installment_amount']) && (float) $data['installment_amount'] > 0
-                ? (float) $data['installment_amount']
-                : $paymentCycle->calculateInstallment($totalAmount);
-
-            $contractNumber = 'CNT-'.now()->format('Ym').'-'.str_pad((string) (Contract::count() + 1), 4, '0', STR_PAD_LEFT);
-
             $contract = Contract::create([
-                'contract_number' => $contractNumber,
+                'contract_number' => null,
                 'property_id' => $property->id,
                 'tenant_id' => $tenantId,
-                'unit_number' => $data['unit_number'],
+                'unit_id' => $unit->id,
+                'unit_number' => $unitNumber,
                 'start_date' => $data['start_date'],
                 'end_date' => $data['end_date'],
                 'total_amount' => $totalAmount,
@@ -353,13 +412,23 @@ class PropertyService
                 'created_by' => $creator->id,
             ]);
 
+            $contractNumber = sprintf('CNT-%s-%05d', now()->format('Ym'), $contract->id);
+            $contract->update([
+                'contract_number' => $contractNumber,
+            ]);
+
+            // Generate dues schedule
+            app(DueScheduleService::class)->generateForContract($contract);
+
+            $monthlyTarget = round($installmentAmount * $paymentCycle->periodsPerYear() / 12, 2);
+
             $tenant->update([
                 'contract_number' => $contractNumber,
-                'monthly_target' => $installmentAmount,
+                'monthly_target' => $monthlyTarget,
                 'due_date' => $data['start_date'],
             ]);
 
-            return $contract->load(['property', 'tenant.user']);
+            return $contract->load(['property', 'tenant.user', 'unit', 'dues']);
         });
     }
 
@@ -385,8 +454,7 @@ class PropertyService
                     ? $paymentCycle->calculateInstallment($totalAmount)
                     : (float) $contract->installment_amount);
 
-            $contract->update(array_filter([
-                'unit_number' => $data['unit_number'] ?? $contract->unit_number,
+            $contractUpdates = array_filter([
                 'start_date' => $data['start_date'] ?? $contract->start_date,
                 'end_date' => $data['end_date'] ?? $contract->end_date,
                 'total_amount' => $totalAmount,
@@ -394,16 +462,43 @@ class PropertyService
                 'installment_amount' => $installmentAmount,
                 'claim_generation_mode' => $data['claim_generation_mode'] ?? $contract->claim_generation_mode,
                 'notes' => array_key_exists('notes', $data) ? $data['notes'] : $contract->notes,
-            ], fn ($val) => $val !== null));
+            ], fn ($val) => $val !== null);
 
-            if (isset($data['unit_number'])) {
-                $contract->tenant?->update([
-                    'property_unit' => $contract->property?->name.' - وحدة '.$data['unit_number'],
-                    'monthly_target' => $installmentAmount,
-                ]);
+            if (! empty($data['unit_id'])) {
+                $newUnit = Unit::findOrFail($data['unit_id']);
+                if ($contract->unit_id !== $newUnit->id) {
+                    $contract->unit?->update(['status' => UnitStatus::Vacant]);
+                    $newUnit->update(['status' => UnitStatus::Occupied]);
+                    $contractUpdates['unit_id'] = $newUnit->id;
+                    $contractUpdates['unit_number'] = $newUnit->unit_number;
+                }
+            } elseif (isset($data['unit_number'])) {
+                $contractUpdates['unit_number'] = $data['unit_number'];
+                if ($data['unit_number'] !== $contract->unit_number) {
+                    $contract->unit?->update(['status' => UnitStatus::Vacant]);
+                    $newUnit = Unit::firstOrCreate([
+                        'property_id' => $contract->property_id,
+                        'unit_number' => $data['unit_number'],
+                    ]);
+                    $newUnit->update(['status' => UnitStatus::Occupied]);
+                    $contractUpdates['unit_id'] = $newUnit->id;
+                }
             }
 
-            return $contract->fresh(['property', 'tenant.user']);
+            $contract->update($contractUpdates);
+
+            // Regenerate dues schedule
+            app(DueScheduleService::class)->generateForContract($contract);
+
+            $monthlyTarget = round($installmentAmount * $paymentCycle->periodsPerYear() / 12, 2);
+
+            $tenantUpdates = ['monthly_target' => $monthlyTarget];
+            if (isset($data['unit_number'])) {
+                $tenantUpdates['property_unit'] = $contract->property?->name.' - وحدة '.$data['unit_number'];
+            }
+            $contract->tenant?->update($tenantUpdates);
+
+            return $contract->fresh(['property', 'tenant.user', 'unit', 'dues']);
         });
     }
 
@@ -412,6 +507,10 @@ class PropertyService
      */
     public function terminateContract(Contract $contract, ?string $reason = null): Contract
     {
+        if ($contract->status !== ContractStatus::Active) {
+            throw ValidationException::withMessages(['contract' => 'لا يمكن إنهاء أو تجديد عقد غير ساري.']);
+        }
+
         return DB::transaction(function () use ($contract, $reason) {
             $contract->update([
                 'status' => ContractStatus::Closed,
@@ -419,7 +518,12 @@ class PropertyService
                 'closure_reason' => $reason,
             ]);
 
-            return $contract->fresh(['property', 'tenant.user']);
+            $contract->unit?->update(['status' => UnitStatus::Vacant]);
+
+            // المستأجر ميبقاش مطلوب منه حاجة بعد إنهاء العقد
+            $contract->tenant?->update(['monthly_target' => 0]);
+
+            return $contract->fresh(['property', 'tenant.user', 'unit']);
         });
     }
 
@@ -430,6 +534,23 @@ class PropertyService
      */
     public function renewContract(Contract $contract, array $data, User $creator): Contract
     {
+        if ($contract->status !== ContractStatus::Active) {
+            throw ValidationException::withMessages(['contract' => 'لا يمكن إنهاء أو تجديد عقد غير ساري.']);
+        }
+
+        $targetUnitNumber = $data['unit_number'] ?? $contract->unit_number;
+        $existingActive = Contract::where('property_id', $contract->property_id)
+            ->where('unit_number', $targetUnitNumber)
+            ->where('status', ContractStatus::Active->value)
+            ->where('id', '!=', $contract->id)
+            ->where('start_date', '<=', $data['end_date'])
+            ->where('end_date', '>=', $data['start_date'])
+            ->exists();
+
+        if ($existingActive) {
+            throw ValidationException::withMessages(['unit_number' => 'الوحدة عليها عقد سارٍ في نفس الفترة.']);
+        }
+
         return DB::transaction(function () use ($contract, $data, $creator) {
             // 1. Mark existing active contract as renewed
             $contract->update([
@@ -445,12 +566,20 @@ class PropertyService
 
             $contractNumber = 'CNT-'.now()->format('Ym').'-'.str_pad((string) (Contract::count() + 1), 4, '0', STR_PAD_LEFT);
 
+            $targetUnitNumber = $data['unit_number'] ?? $contract->unit_number;
+            $unit = Unit::firstOrCreate([
+                'property_id' => $contract->property_id,
+                'unit_number' => $targetUnitNumber,
+            ]);
+            $unit->update(['status' => UnitStatus::Occupied]);
+
             // 2. Create new active contract linked to the previous one
             $newContract = Contract::create([
-                'contract_number' => $contractNumber,
+                'contract_number' => null,
                 'property_id' => $contract->property_id,
                 'tenant_id' => $contract->tenant_id,
-                'unit_number' => $data['unit_number'] ?? $contract->unit_number,
+                'unit_id' => $unit->id,
+                'unit_number' => $targetUnitNumber,
                 'start_date' => $data['start_date'],
                 'end_date' => $data['end_date'],
                 'total_amount' => $totalAmount,
@@ -463,13 +592,23 @@ class PropertyService
                 'created_by' => $creator->id,
             ]);
 
+            $contractNumber = sprintf('CNT-%s-%05d', now()->format('Ym'), $newContract->id);
+            $newContract->update([
+                'contract_number' => $contractNumber,
+            ]);
+
+            // Generate dues schedule
+            app(DueScheduleService::class)->generateForContract($newContract);
+
+            $monthlyTarget = round($installmentAmount * $paymentCycle->periodsPerYear() / 12, 2);
+
             $contract->tenant?->update([
                 'contract_number' => $contractNumber,
-                'monthly_target' => $installmentAmount,
+                'monthly_target' => $monthlyTarget,
                 'due_date' => $data['start_date'],
             ]);
 
-            return $newContract->load(['property', 'tenant.user']);
+            return $newContract->load(['property', 'tenant.user', 'unit', 'dues']);
         });
     }
 }

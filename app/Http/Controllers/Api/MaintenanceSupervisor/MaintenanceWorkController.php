@@ -19,28 +19,10 @@ class MaintenanceWorkController extends Controller
     ) {}
 
     /**
-     * Ensure the authenticated user has maintenance supervisor or general manager privileges.
-     */
-    protected function authorizeSupervisor(Request $request): ?JsonResponse
-    {
-        $user = $request->user();
-
-        if (! $user || (! $user->isMaintenanceSupervisor() && ! $user->isGeneralManager())) {
-            return ApiResponse::error('غير مصرح لك بالوصول إلى موديول مشرف الصيانة.', 403);
-        }
-
-        return null;
-    }
-
-    /**
      * Display a listing of sent maintenance work reports ("التقارير المرسلة").
      */
     public function index(Request $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $result = $this->service->getListing(
             filters: [
                 'search' => $request->input('search'),
@@ -48,7 +30,7 @@ class MaintenanceWorkController extends Controller
                 'status' => $request->input('status'),
                 'owner_id' => $request->input('owner_id'),
             ],
-            perPage: $request->integer('per_page', 15)
+            perPage: min(max($request->integer('per_page', 15), 1), 100)
         );
 
         return ApiResponse::success([
@@ -68,10 +50,6 @@ class MaintenanceWorkController extends Controller
      */
     public function store(StoreMaintenanceWorkRequest $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $files = $request->file('attachments') ?? [];
         if (! is_array($files) && $files !== null) {
             $files = [$files];
@@ -95,10 +73,6 @@ class MaintenanceWorkController extends Controller
      */
     public function show(Request $request, MaintenanceWork $maintenanceWork): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $maintenanceWork->load(['owner', 'creator', 'maintenanceRequest']);
 
         return ApiResponse::success(
@@ -112,10 +86,6 @@ class MaintenanceWorkController extends Controller
      */
     public function update(UpdateMaintenanceWorkRequest $request, MaintenanceWork $maintenanceWork): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $files = $request->file('attachments') ?? [];
         if (! is_array($files) && $files !== null) {
             $files = [$files];
@@ -138,10 +108,6 @@ class MaintenanceWorkController extends Controller
      */
     public function destroy(Request $request, MaintenanceWork $maintenanceWork): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $this->service->delete($maintenanceWork);
 
         return ApiResponse::success(null, 'تم حذف تقرير الصيانة بنجاح.');
@@ -152,10 +118,6 @@ class MaintenanceWorkController extends Controller
      */
     public function exportPdf(Request $request): JsonResponse
     {
-        if ($forbidden = $this->authorizeSupervisor($request)) {
-            return $forbidden;
-        }
-
         $summary = $this->service->getApprovedExportSummary(
             ownerId: $request->integer('owner_id') ?: null
         );

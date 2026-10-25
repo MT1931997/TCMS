@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tenant_info', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
-            $table->string('tenant_number')->unique()->index();
+            $table->string('tenant_number')->nullable()->unique()->index();
             $table->string('property_unit')->index();
             $table->date('due_date')->index();
             $table->decimal('monthly_target', 12, 2)->default(0);

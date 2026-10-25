@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'ticket_number',
@@ -139,27 +140,13 @@ class MaintenanceRequest extends Model
     }
 
     /**
-     * Generate a unique readable ticket number for maintenance requests.
+     * Generate a unique random ticket number for maintenance requests.
      */
     public static function generateTicketNumber(): string
     {
-        $prefix = 'MNT-'.now()->format('Ym');
-        $latest = static::query()
-            ->where('ticket_number', 'like', "{$prefix}-%")
-            ->latest('id')
-            ->value('ticket_number');
-
-        if ($latest && preg_match('/-(\d+)$/', $latest, $matches)) {
-            $sequence = ((int) $matches[1]) + 1;
-        } else {
-            $sequence = 1;
-        }
-
-        $ticket = sprintf('%s-%04d', $prefix, $sequence);
-        while (static::where('ticket_number', $ticket)->exists()) {
-            $sequence++;
-            $ticket = sprintf('%s-%04d', $prefix, $sequence);
-        }
+        do {
+            $ticket = 'MNT-'.Str::upper(Str::random(10));
+        } while (static::where('ticket_number', $ticket)->exists());
 
         return $ticket;
     }

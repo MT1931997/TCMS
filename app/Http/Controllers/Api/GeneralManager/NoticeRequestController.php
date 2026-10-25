@@ -59,7 +59,7 @@ class NoticeRequestController extends Controller
         $allCount = NoticeRequest::count();
 
         $requests = $query->latest()
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
         return ApiResponse::success([
             'requests' => NoticeRequestResource::collection($requests),
@@ -121,7 +121,7 @@ class NoticeRequestController extends Controller
      */
     public function approveDelivery(Request $request, NoticeRequest $noticeRequest): JsonResponse
     {
-        if ($noticeRequest->status !== NoticeRequestStatus::PendingApproval && empty($noticeRequest->delivery_proof_path)) {
+        if ($noticeRequest->status !== NoticeRequestStatus::PendingApproval || empty($noticeRequest->delivery_proof_path)) {
             return ApiResponse::error('لا يمكن اعتماد التسليم دون وجود إثبات تسليم مرفوع مسبقاً.', 422);
         }
 

@@ -55,8 +55,8 @@ class OwnerManagementController extends Controller
             'owners' => $allOwnersCount,
         ];
 
-        if ($perPage = $request->query('per_page')) {
-            $owners = $query->latest('id')->paginate((int) $perPage);
+        if ($request->has('per_page')) {
+            $owners = $query->latest('id')->paginate(min(max($request->integer('per_page', 15), 1), 100));
 
             return ApiResponse::success([
                 'owners' => UserResource::collection($owners),
@@ -179,6 +179,10 @@ class OwnerManagementController extends Controller
         $owner->update([
             'is_active' => ! $owner->is_active,
         ]);
+
+        if (! $owner->is_active) {
+            $owner->tokens()->delete();
+        }
 
         $message = $owner->is_active
             ? 'تم تفعيل حساب المالك بنجاح.'

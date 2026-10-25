@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\DueStatus;
+use App\Enums\PaymentCycle;
 use App\Enums\PaymentStatus;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -127,6 +130,14 @@ class TenantInfo extends Model
     }
 
     /**
+     * Scheduled financial dues for this tenant.
+     */
+    public function dues(): HasMany
+    {
+        return $this->hasMany(Due::class, 'tenant_id')->orderBy('due_date');
+    }
+
+    /**
      * Notice requests recorded for this tenant.
      */
     public function noticeRequests(): HasMany
@@ -151,5 +162,67 @@ class TenantInfo extends Model
             ->where('period', $period)
             ->whereIn('status', [PaymentStatus::Completed->value, PaymentStatus::Approved->value])
             ->sum('amount');
+    }
+
+    /**
+     * Get property and unit description from active contract and unit entity as single source of truth.
+     */
+    public function getPropertyUnitAttribute(): ?string
+    {
+        $contract = $this->activeContract;
+        if ($contract && $contract->unit) {
+            $propName = $this->property?->name ?? $contract->property?->name;
+            $unitNo = $contract->unit->unit_number;
+
+            return $propName ? $propName.' - وحدة '.$unitNo : 'وحدة '.$unitNo;
+        }
+
+        return $this->attributes['property_unit'] ?? null;
+    }
+
+    /**
+     * Get contract number from active contract as single source of truth.
+     */
+    public function getContractNumberAttribute(): ?string
+    {
+        return $this->activeContract?->contract_number ?? ($this->attributes['contract_number'] ?? null);
+    }
+
+    /**
+     * Get monthly target dynamically from active contract.
+     */
+    public function getMonthlyTargetAttribute(): float
+    {
+        if ($this->activeContract) {
+            $installment = (float) $this->activeContract->installment_amount;
+            $cycle = $this->activeContract->payment_cycle;
+
+            return $cycle instanceof PaymentCycle
+                ? round($installment * $cycle->periodsPerYear() / 12, 2)
+                : $installment;
+        }
+
+        return (float) ($this->attributes['monthly_target'] ?? 0);
+    }
+
+    /**
+     * Get due date dynamically from scheduled dues or active contract start date.
+     */
+    public function getDueDateAttribute(): ?Carbon
+    {
+        if ($this->activeContract) {
+            $pendingDue = $this->dues()
+                ->where('status', '!=', DueStatus::Paid->value)
+                ->orderBy('due_date')
+                ->first();
+
+            if ($pendingDue) {
+                return Carbon::parse($pendingDue->due_date);
+            }
+
+            return Carbon::parse($this->activeContract->start_date);
+        }
+
+        return ! empty($this->attributes['due_date']) ? Carbon::parse($this->attributes['due_date']) : null;
     }
 }

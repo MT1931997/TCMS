@@ -96,7 +96,11 @@ Route::apiResource('maintenance-works', MaintenanceWorkController::class)->names
 // إدارة الأملاك والعقود (العقارات)
 Route::get('properties/{property}/contracts/options', [PropertyController::class, 'contractOptions'])->name('api.general-manager.properties.contracts.options');
 Route::post('properties/{property}/contracts', [PropertyController::class, 'storeContract'])->name('api.general-manager.properties.contracts.store');
-Route::put('properties/{property}/contracts/{contract}', [PropertyController::class, 'updateContract'])->name('api.general-manager.properties.contracts.update');
-Route::post('properties/{property}/contracts/{contract}/terminate', [PropertyController::class, 'terminateContract'])->name('api.general-manager.properties.contracts.terminate');
-Route::post('properties/{property}/contracts/{contract}/renew', [PropertyController::class, 'renewContract'])->name('api.general-manager.properties.contracts.renew');
+
+Route::scopeBindings()->group(function () {
+    Route::put('properties/{property}/contracts/{contract}', [PropertyController::class, 'updateContract'])->name('api.general-manager.properties.contracts.update');
+    Route::post('properties/{property}/contracts/{contract}/terminate', [PropertyController::class, 'terminateContract'])->name('api.general-manager.properties.contracts.terminate');
+    Route::post('properties/{property}/contracts/{contract}/renew', [PropertyController::class, 'renewContract'])->name('api.general-manager.properties.contracts.renew');
+});
+
 Route::apiResource('properties', PropertyController::class)->names('api.general-manager.properties');
