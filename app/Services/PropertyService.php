@@ -6,6 +6,7 @@ use App\Enums\ClaimGenerationMode;
 use App\Enums\ContractStatus;
 use App\Enums\PaymentCycle;
 use App\Enums\PaymentStatus;
+use App\Enums\TenantStatus;
 use App\Enums\UnitStatus;
 use App\Enums\UserType;
 use App\Models\Contract;
@@ -69,14 +70,14 @@ class PropertyService
             $totalActiveContractsCount = TenantInfo::whereNotNull('property_id')
                 ->where(function ($q) {
                     $q->whereNotNull('contract_number')
-                        ->orWhereIn('status', ['regular', 'late', 'paid']);
+                        ->orWhereIn('status', TenantStatus::values());
                 })
                 ->count();
 
             if ($totalActiveContractsCount === 0) {
                 $totalActiveContractsCount = TenantInfo::where(function ($q) {
                     $q->whereNotNull('contract_number')
-                        ->orWhereIn('status', ['regular', 'late', 'paid']);
+                        ->orWhereIn('status', TenantStatus::values());
                 })->count();
             }
         }

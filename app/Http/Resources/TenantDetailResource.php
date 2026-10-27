@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\TenantStatus;
 use App\Models\TenantInfo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,6 +24,18 @@ class TenantDetailResource extends JsonResource
         $paid = $this->paidForPeriod($period);
         $remaining = max(0, $target - $paid);
         $percentage = $target > 0 ? min(100, round(($paid / $target) * 100)) : 0;
+
+        $statusEnum = $this->status instanceof TenantStatus
+            ? $this->status
+            : TenantStatus::tryFrom((string) $this->status);
+
+        $statusLabel = $statusEnum?->label() ?? 'لم يسدد';
+
+        if ($target > 0 && $paid >= $target) {
+            $statusLabel = TenantStatus::Paid->label();
+        } elseif ($paid > 0 && $paid < $target) {
+            $statusLabel = 'مسدد جزئي';
+        }
 
         return [
             'tenant_info' => [
@@ -48,6 +61,7 @@ class TenantDetailResource extends JsonResource
                 'birth_date' => $this->birth_date?->format('Y-m-d'),
                 'notes' => $this->notes,
                 'status' => $this->status,
+                'status_label' => $statusLabel,
             ],
             'current_month_target' => [
                 'period' => $period,

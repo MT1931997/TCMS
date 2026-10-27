@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TenantStatus;
 use App\Enums\UserType;
 use App\Models\Property;
 use App\Models\TenantInfo;
@@ -200,7 +201,7 @@ class TenantImportService
                             'owner_id' => $ownerId,
                             'supervisor_id' => $supervisor->id,
                             'notes' => $notes ?: null,
-                            'status' => 'regular',
+                            'status' => TenantStatus::Unpaid->value,
                         ]);
 
                         $imported++;

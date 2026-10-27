@@ -28,10 +28,12 @@ class TenantListResource extends JsonResource
             ? $this->status
             : TenantStatus::tryFrom((string) $this->status);
 
-        $statusLabel = $statusEnum?->label() ?? 'منتظم';
+        $statusLabel = $statusEnum?->label() ?? 'لم يسدد';
 
         if ($target > 0 && $paid >= $target) {
             $statusLabel = TenantStatus::Paid->label();
+        } elseif ($paid > 0 && $paid < $target) {
+            $statusLabel = 'مسدد جزئي';
         }
 
         return [

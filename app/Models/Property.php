@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use App\Enums\TenantStatus;
 use App\Enums\UnitStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -104,7 +105,7 @@ class Property extends Model
         return $this->tenants()
             ->where(function ($q) {
                 $q->whereNotNull('contract_number')
-                    ->orWhereIn('status', ['regular', 'late', 'paid']);
+                    ->orWhereIn('status', TenantStatus::values());
             })
             ->count();
     }

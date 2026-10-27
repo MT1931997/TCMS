@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum TenantStatus: string
 {
+    case Unpaid = 'unpaid';
     case Regular = 'regular';
     case Late = 'late';
     case Paid = 'paid';
@@ -14,6 +15,7 @@ enum TenantStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::Unpaid => 'لم يسدد',
             self::Regular => 'منتظم',
             self::Late => 'متأخر',
             self::Paid => 'مسدد',

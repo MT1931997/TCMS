@@ -83,7 +83,7 @@ class PropertyController extends Controller
                 $status = TenantStatus::Late->value;
                 $statusLabel = 'متأخر';
             } else {
-                $status = TenantStatus::Regular->value;
+                $status = TenantStatus::Unpaid->value;
                 $statusLabel = 'لم يسدد';
             }
 

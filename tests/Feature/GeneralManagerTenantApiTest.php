@@ -101,6 +101,8 @@ class GeneralManagerTenantApiTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.tenant_info.name', 'محمد عبدالله')
             ->assertJsonPath('data.tenant_info.tenant_number', 'T-1024')
+            ->assertJsonPath('data.tenant_info.status', 'unpaid')
+            ->assertJsonPath('data.tenant_info.status_label', 'لم يسدد')
             ->assertJsonPath('data.current_month_target.target_amount', 1000);
 
         // Assert user created in users table
@@ -114,6 +116,7 @@ class GeneralManagerTenantApiTest extends TestCase
         $this->assertDatabaseHas('tenant_info', [
             'tenant_number' => 'T-1024',
             'property_unit' => 'برج الأمل - وحدة 12',
+            'status' => 'unpaid',
         ]);
     }
 
@@ -296,5 +299,30 @@ class GeneralManagerTenantApiTest extends TestCase
             ->assertJsonPath('data.current_month_target.remaining_amount', 600)
             ->assertJsonPath('data.current_month_target.percentage', 40)
             ->assertJsonCount(1, 'data.payments_ledger');
+    }
+
+    public function test_newly_registered_tenant_appears_as_unpaid_in_listing(): void
+    {
+        $payload = [
+            'name' => 'خالد العتيبي',
+            'tenant_number' => 'T-5555',
+            'phone' => '0598765432',
+            'property_unit' => 'برج النخيل - شقة 10',
+            'due_date' => now()->addDays(10)->format('Y-m-d'),
+            'monthly_target' => 3000,
+            'collector_id' => $this->collector->id,
+        ];
+
+        $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.tenants.store'), $payload)
+            ->assertStatus(201);
+
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->getJson(route('api.general-manager.tenants.index', ['search' => 'T-5555']));
+
+        $response->assertOk()
+            ->assertJsonPath('data.tenants.0.tenant_number', 'T-5555')
+            ->assertJsonPath('data.tenants.0.status', 'unpaid')
+            ->assertJsonPath('data.tenants.0.status_label', 'لم يسدد');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\GeneralManager;
 
+use App\Enums\TenantStatus;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GeneralManager\StoreTenantRequest;
@@ -98,7 +99,7 @@ class TenantController extends Controller
                 'national_id' => $validated['national_id'] ?? null,
                 'birth_date' => $validated['birth_date'] ?? null,
                 'notes' => $validated['notes'] ?? null,
-                'status' => 'regular',
+                'status' => TenantStatus::Unpaid->value,
             ]);
         });
 

@@ -121,13 +121,23 @@ class TenantImportApiTest extends TestCase
             'contract_number' => 'CNT-101',
             'property_unit' => 'برج التحلية - شقة 101',
             'monthly_target' => 2500,
+            'status' => 'unpaid',
         ]);
 
         $this->assertDatabaseHas('tenant_info', [
             'tenant_number' => 'T-9002',
             'contract_number' => null,
             'monthly_target' => 3000,
+            'status' => 'unpaid',
         ]);
+
+        $listResponse = $this->actingAs($this->supervisor, 'sanctum')
+            ->getJson(route('api.general-manager.tenants.index', ['search' => 'T-9001']));
+
+        $listResponse->assertOk()
+            ->assertJsonPath('data.tenants.0.tenant_number', 'T-9001')
+            ->assertJsonPath('data.tenants.0.status', 'unpaid')
+            ->assertJsonPath('data.tenants.0.status_label', 'لم يسدد');
     }
 
     public function test_supervisor_can_update_existing_tenants_from_excel_file(): void
