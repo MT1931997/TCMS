@@ -11,9 +11,11 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -52,6 +54,9 @@ class TenantImportService
             $tenantNumber = trim((string) $worksheet->getCell("B{$row}")->getValue());
             $name = trim((string) $worksheet->getCell("C{$row}")->getValue());
             $phone = trim((string) $worksheet->getCell("D{$row}")->getValue());
+            if (preg_match('/^5\d{8}$/', $phone)) {
+                $phone = '0'.$phone;
+            }
             $propertyUnit = trim((string) $worksheet->getCell("E{$row}")->getValue());
             $dueDateCell = $worksheet->getCell("F{$row}");
             $collectorVal = trim((string) $worksheet->getCell("G{$row}")->getValue());
@@ -254,13 +259,17 @@ class TenantImportService
         $sheet->setCellValue('A2', '5454');
         $sheet->setCellValue('B2', '121212');
         $sheet->setCellValue('C2', 'محمد عبدالله');
-        $sheet->setCellValue('D2', '0500000000');
+        $sheet->setCellValueExplicit('D2', '0500000000', DataType::TYPE_STRING);
         $sheet->setCellValue('E2', 'برج الأمل - وحدة 12');
         $sheet->setCellValue('F2', '2026-10-30');
         $sheet->setCellValue('G2', 'المحصل الأول');
         $sheet->setCellValue('H2', 'المالك الأول');
         $sheet->setCellValue('I2', 2000);
         $sheet->setCellValue('J2', 'ملاحظات تجريبية');
+
+        // Column formats
+        $sheet->getStyle('D')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+        $sheet->getStyle('F')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
 
         // Auto-fit column widths
         foreach (range('A', 'J') as $col) {
@@ -278,24 +287,125 @@ class TenantImportService
     }
 
     /**
-     * Helper to safely parse dates from Excel cell.
+     * Helper to safely and robustly parse dates from Excel cell.
      */
     private function parseExcelDate($cell): string
     {
-        $val = $cell->getValue();
-
-        if (empty($val)) {
+        if ($cell === null) {
             return now()->addDays(15)->format('Y-m-d');
         }
 
-        if (is_numeric($val) && ExcelDate::isDateTime($cell)) {
-            return ExcelDate::excelToDateTimeObject((float) $val)->format('Y-m-d');
+        $rawVal = $cell->getValue();
+
+        // 1. If empty
+        if ($rawVal === null || $rawVal === '') {
+            return now()->addDays(15)->format('Y-m-d');
         }
 
+        // 2. If already a DateTime object
+        if ($rawVal instanceof \DateTimeInterface) {
+            return $rawVal->format('Y-m-d');
+        }
+
+        // 3. Check if it's an Excel numeric date serial
+        // In Excel, serial dates for years ~1902 to 2173 are numbers between 1000 and 100000 (e.g. 46296 is 2026-10-01).
+        // NEVER pass these serial numbers to Carbon::parse() as integers because Carbon treats them as Unix timestamp seconds (producing 1970-01-01)!
+        if (is_numeric($rawVal)) {
+            $num = (float) $rawVal;
+            if ($num >= 1000 && $num <= 100000) {
+                try {
+                    return ExcelDate::excelToDateTimeObject($num)->format('Y-m-d');
+                } catch (\Throwable) {
+                    // continue
+                }
+            } elseif ($num >= 1000000000) {
+                // Unix timestamp in seconds
+                try {
+                    return Carbon::createFromTimestamp((int) $num)->format('Y-m-d');
+                } catch (\Throwable) {
+                    // continue
+                }
+            }
+        }
+
+        // 4. Extract formatted string value if available
+        $valStr = '';
         try {
-            return Carbon::parse($val)->format('Y-m-d');
+            $formatted = $cell->getFormattedValue();
+            if (! empty($formatted) && ! is_numeric($formatted)) {
+                $valStr = (string) $formatted;
+            }
         } catch (\Throwable) {
+            $valStr = '';
+        }
+
+        if (empty($valStr)) {
+            $valStr = (string) $rawVal;
+        }
+
+        // Convert Eastern Arabic numerals (٠-٩) to Western (0-9)
+        $arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $valStr = str_replace($arabicDigits, $englishDigits, $valStr);
+
+        // Strip hidden unicode marks (LTR, RTL, zero-width, non-breaking spaces)
+        $valStr = preg_replace('/[\x{200E}\x{200F}\x{200B}-\x{200D}\x{FEFF}\s]+/u', ' ', $valStr) ?? $valStr;
+        $valStr = trim($valStr);
+
+        if (empty($valStr)) {
             return now()->addDays(15)->format('Y-m-d');
         }
+
+        // If numeric after cleaning
+        if (is_numeric($valStr)) {
+            $num = (float) $valStr;
+            if ($num >= 1000 && $num <= 100000) {
+                try {
+                    return ExcelDate::excelToDateTimeObject($num)->format('Y-m-d');
+                } catch (\Throwable) {
+                    // continue
+                }
+            }
+        }
+
+        // 5. Match standard date patterns:
+        // Case A: Y-m-d or Y/m/d (e.g. 2026-10-01 or 2026/10/01)
+        if (preg_match('/^(\d{4})[-\/\.](0?[1-9]|1[0-2])[-\/\.](0?[1-9]|[12]\d|3[01])$/', $valStr, $m)) {
+            return sprintf('%04d-%02d-%02d', (int) $m[1], (int) $m[2], (int) $m[3]);
+        }
+
+        // Case B: d/m/Y or m/d/Y (e.g. 10/1/2026 or 25/10/2026)
+        if (preg_match('/^(\d{1,2})[-\/\.](\d{1,2})[-\/\.](\d{4})$/', $valStr, $m)) {
+            $p1 = (int) $m[1];
+            $p2 = (int) $m[2];
+            $year = (int) $m[3];
+
+            if ($p1 > 12 && $p2 <= 12) {
+                // Clearly day/month/year (e.g. 25/10/2026)
+                return sprintf('%04d-%02d-%02d', $year, $p2, $p1);
+            } elseif ($p2 > 12 && $p1 <= 12) {
+                // Clearly month/day/year (e.g. 10/25/2026)
+                return sprintf('%04d-%02d-%02d', $year, $p1, $p2);
+            } else {
+                // Both <= 12 (e.g. 10/1/2026 or 1/10/2026)
+                try {
+                    return Carbon::parse($valStr)->format('Y-m-d');
+                } catch (\Throwable) {
+                    return sprintf('%04d-%02d-%02d', $year, $p2, $p1);
+                }
+            }
+        }
+
+        // 6. Generic Carbon parse fallback
+        try {
+            $parsed = Carbon::parse($valStr);
+            if ($parsed->year >= 1970 && $parsed->year <= 2100) {
+                return $parsed->format('Y-m-d');
+            }
+        } catch (\Throwable) {
+            // fallback
+        }
+
+        return now()->addDays(15)->format('Y-m-d');
     }
 }

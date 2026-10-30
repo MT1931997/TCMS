@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\TenantInfo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -236,5 +237,87 @@ class TenantImportApiTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['file']);
+    }
+
+    public function test_import_correctly_parses_excel_dates_and_various_formats(): void
+    {
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->setCellValue('A1', 'رقم العقد');
+        $sheet->setCellValue('B1', 'رقم المستأجر');
+        $sheet->setCellValue('C1', 'اسم المستأجر');
+        $sheet->setCellValue('D1', 'رقم الجوال');
+        $sheet->setCellValue('E1', 'العقار والوحدة');
+        $sheet->setCellValue('F1', 'تاريخ الاستحقاق');
+        $sheet->setCellValue('G1', 'المحصل');
+        $sheet->setCellValue('H1', 'المالك');
+        $sheet->setCellValue('I1', 'الهدف الشهري');
+        $sheet->setCellValue('J1', 'ملاحظات');
+
+        // Row 2: Numeric Excel date serial 46296 (2026-10-01)
+        $sheet->setCellValue('A2', '5454');
+        $sheet->setCellValue('B2', 'TNT-DATE-1');
+        $sheet->setCellValue('C2', 'عمرو التاريخ الأول');
+        $sheet->setCellValue('D2', '0500009791');
+        $sheet->setCellValue('E2', 'برج الأمل - وحدة 101');
+        $sheet->setCellValue('F2', 46296);
+        $sheet->setCellValue('G2', 'المحصل الأول');
+        $sheet->setCellValue('H2', 'المالك الأول');
+        $sheet->setCellValue('I2', 2000);
+        $sheet->setCellValue('J2', '');
+
+        // Row 3: Slash date '10/1/2026'
+        $sheet->setCellValue('A3', '5455');
+        $sheet->setCellValue('B3', 'TNT-DATE-2');
+        $sheet->setCellValue('C3', 'عمرو التاريخ الثاني');
+        $sheet->setCellValue('D3', '0500009792');
+        $sheet->setCellValue('E3', 'برج الأمل - وحدة 102');
+        $sheet->setCellValue('F3', '10/1/2026');
+        $sheet->setCellValue('G2', 'المحصل الأول');
+        $sheet->setCellValue('H2', 'المالك الأول');
+        $sheet->setCellValue('G3', 'المحصل الأول');
+        $sheet->setCellValue('H3', 'المالك الأول');
+        $sheet->setCellValue('I3', 2000);
+        $sheet->setCellValue('J3', '');
+
+        // Row 4: d/m/Y date '25/10/2026'
+        $sheet->setCellValue('A4', '5456');
+        $sheet->setCellValue('B4', 'TNT-DATE-3');
+        $sheet->setCellValue('C4', 'عمرو التاريخ الثالث');
+        $sheet->setCellValue('D4', '0500009793');
+        $sheet->setCellValue('E4', 'برج الأمل - وحدة 103');
+        $sheet->setCellValue('F4', '25/10/2026');
+        $sheet->setCellValue('G4', 'المحصل الأول');
+        $sheet->setCellValue('H4', 'المالك الأول');
+        $sheet->setCellValue('I4', 2000);
+        $sheet->setCellValue('J4', '');
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'test_dates_').'.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($tempPath);
+
+        $uploadedFile = new UploadedFile($tempPath, 'dates_test.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.tenants.import'), ['file' => $uploadedFile]);
+        @unlink($tempPath);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.imported', 3)
+            ->assertJsonPath('data.failed', 0);
+
+        // Assert dates are correctly saved and NOT 1970-01-01
+        $t1 = TenantInfo::where('tenant_number', 'TNT-DATE-1')->first();
+        $this->assertNotNull($t1);
+        $this->assertEquals('2026-10-01', $t1->due_date?->format('Y-m-d'));
+
+        $t2 = TenantInfo::where('tenant_number', 'TNT-DATE-2')->first();
+        $this->assertNotNull($t2);
+        $this->assertNotEquals('1970-01-01', $t2->due_date?->format('Y-m-d'));
+
+        $t3 = TenantInfo::where('tenant_number', 'TNT-DATE-3')->first();
+        $this->assertNotNull($t3);
+        $this->assertEquals('2026-10-25', $t3->due_date?->format('Y-m-d'));
     }
 }
