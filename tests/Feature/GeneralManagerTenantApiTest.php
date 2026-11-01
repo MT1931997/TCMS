@@ -2,12 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UnitStatus;
 use App\Enums\UserType;
+use App\Models\Contract;
+use App\Models\Due;
+use App\Models\MaintenanceRequest;
+use App\Models\Payment;
+use App\Models\PaymentNote;
+use App\Models\Property;
 use App\Models\TenantInfo;
 use App\Models\TenantNote;
 use App\Models\TenantPromise;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class GeneralManagerTenantApiTest extends TestCase
@@ -324,5 +333,122 @@ class GeneralManagerTenantApiTest extends TestCase
             ->assertJsonPath('data.tenants.0.tenant_number', 'T-5555')
             ->assertJsonPath('data.tenants.0.status', 'unpaid')
             ->assertJsonPath('data.tenants.0.status_label', 'لم يسدد');
+    }
+
+    public function test_supervisor_can_delete_tenant_who_has_payments_and_contracts(): void
+    {
+        Storage::fake('local');
+        $attachmentPath = 'receipts/test_rec.pdf';
+        Storage::disk('local')->put($attachmentPath, 'dummy content');
+
+        $tenantUser = User::factory()->tenant()->create([
+            'name' => 'مستأجر مسدد',
+            'phone' => '0599999999',
+        ]);
+
+        $property = Property::factory()->create([
+            'owner_id' => $this->owner->id,
+            'name' => 'برج التحرير',
+        ]);
+
+        $unit = Unit::factory()->create([
+            'property_id' => $property->id,
+            'unit_number' => 'U-101',
+            'status' => UnitStatus::Occupied,
+        ]);
+
+        $tenant = TenantInfo::create([
+            'user_id' => $tenantUser->id,
+            'tenant_number' => 'T-8888',
+            'property_unit' => 'برج التحرير - U-101',
+            'due_date' => '2026-10-01',
+            'monthly_target' => 2000,
+            'collector_id' => $this->collector->id,
+            'owner_id' => $this->owner->id,
+            'status' => 'paid',
+        ]);
+
+        $contract = Contract::create([
+            'contract_number' => 'CNT-8888',
+            'property_id' => $property->id,
+            'tenant_id' => $tenant->id,
+            'unit_id' => $unit->id,
+            'unit_number' => 'U-101',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+            'total_amount' => 24000,
+            'installment_amount' => 2000,
+            'status' => 'active',
+        ]);
+
+        $due = Due::create([
+            'contract_id' => $contract->id,
+            'tenant_id' => $tenant->id,
+            'unit_id' => $unit->id,
+            'due_date' => '2026-10-01',
+            'amount' => 2000,
+            'paid_amount' => 2000,
+            'period' => '2026-10',
+            'status' => 'paid',
+        ]);
+
+        $payment = Payment::create([
+            'tenant_id' => $tenant->id,
+            'due_id' => $due->id,
+            'collector_id' => $this->collector->id,
+            'amount' => 2000,
+            'payment_date' => '2026-10-05',
+            'payment_method' => 'تحويل بنكي',
+            'receipt_number' => 'REC-8888',
+            'attachment_path' => $attachmentPath,
+            'period' => '2026-10',
+            'status' => 'approved',
+        ]);
+
+        PaymentNote::create([
+            'payment_id' => $payment->id,
+            'user_id' => $this->supervisor->id,
+            'content' => 'ملاحظة على السداد',
+        ]);
+
+        TenantNote::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $this->supervisor->id,
+            'content' => 'ملاحظة عامة على المستأجر',
+        ]);
+
+        TenantPromise::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $this->supervisor->id,
+            'promise_date' => '2026-11-01',
+            'note' => 'موعد سداد قادم',
+        ]);
+
+        $maintReq = MaintenanceRequest::factory()->create([
+            'tenant_id' => $tenant->id,
+            'owner_id' => $this->owner->id,
+            'property_unit' => 'برج التحرير - U-101',
+        ]);
+
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->deleteJson(route('api.general-manager.tenants.destroy', $tenant));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'تم حذف المستأجر وحسابه بنجاح.');
+
+        $this->assertDatabaseMissing('tenant_info', ['id' => $tenant->id]);
+        $this->assertDatabaseMissing('users', ['id' => $tenantUser->id]);
+        $this->assertDatabaseMissing('payments', ['id' => $payment->id]);
+        $this->assertDatabaseMissing('contracts', ['id' => $contract->id]);
+        $this->assertDatabaseMissing('dues', ['id' => $due->id]);
+
+        Storage::disk('local')->assertMissing($attachmentPath);
+
+        $this->assertEquals(UnitStatus::Vacant, $unit->fresh()->status);
+        $this->assertDatabaseHas('maintenance_requests', [
+            'id' => $maintReq->id,
+            'tenant_id' => null,
+        ]);
     }
 }

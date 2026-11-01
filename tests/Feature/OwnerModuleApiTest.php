@@ -196,7 +196,7 @@ class OwnerModuleApiTest extends TestCase
             ->assertJsonPath('data.tenants.0.collector_name', 'المحصل الأول')
             ->assertJsonPath('data.tenants.0.monthly_target', 1000)
             ->assertJsonPath('data.tenants.0.paid_amount', 0)
-            ->assertJsonPath('data.tenants.0.status_label', 'لم يسدد')
+            ->assertJsonPath('data.tenants.0.status_label', 'متأخر')
             ->assertJsonPath('data.statistics.total_units', 1)
             ->assertJsonPath('data.statistics.total_target', 1000);
     }

@@ -244,4 +244,21 @@ class OwnerMaintenanceRequestApiTest extends TestCase
         $response3->assertStatus(422)
             ->assertJsonPath('message', 'الطلب ده مش متاح لقرار المالك دلوقتي.');
     }
+
+    public function test_owner_can_filter_maintenance_requests_using_status_query_param(): void
+    {
+        $pendingReq = MaintenanceRequest::factory()->pendingOwner()->create([
+            'owner_id' => $this->owner->id,
+            'title' => 'عطل سباكة بانتظار القرار',
+            'property_unit' => 'برج النور',
+        ]);
+
+        $response = $this->actingAs($this->owner, 'sanctum')
+            ->getJson(route('api.owner.maintenance-requests.index', ['status' => 'pending']));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.requests.0.id', $pendingReq->id)
+            ->assertJsonPath('data.pending_requests.0.id', $pendingReq->id);
+    }
 }

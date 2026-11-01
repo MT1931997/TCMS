@@ -257,5 +257,53 @@ class GeneralManagerPaymentApiTest extends TestCase
             'id' => $this->payment->id,
             'notes' => 'تم استلام الحوالة من قبل المالك مباشرة',
         ]);
+
+        $this->assertDatabaseHas('payment_notes', [
+            'payment_id' => $this->payment->id,
+            'user_id' => $this->supervisor->id,
+            'content' => 'تم استلام الحوالة من قبل المالك مباشرة',
+        ]);
+    }
+
+    public function test_notes_added_by_owner_are_stored_and_visible_in_supervisor_view(): void
+    {
+        // Owner adds note
+        $this->actingAs($this->owner, 'sanctum')
+            ->postJson(route('api.owner.payments.notes.store', $this->payment), [
+                'content' => 'ملاحظة مرسلة من المالك بخصوص السداد',
+            ])
+            ->assertCreated();
+
+        // Supervisor views owner payments and sees the owner's comment in both notes and notes_list
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->getJson(route('api.general-manager.owner-payments.index'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.payments.0.notes', 'ملاحظة مرسلة من المالك بخصوص السداد')
+            ->assertJsonPath('data.payments.0.notes_list.0.content', 'ملاحظة مرسلة من المالك بخصوص السداد');
+
+        // Supervisor can also view the notes thread via dedicated endpoint
+        $notesResponse = $this->actingAs($this->supervisor, 'sanctum')
+            ->getJson(route('api.general-manager.owner-payments.notes.index', $this->payment));
+
+        $notesResponse->assertOk()
+            ->assertJsonPath('data.notes.0.content', 'ملاحظة مرسلة من المالك بخصوص السداد');
+    }
+
+    public function test_supervisor_can_reply_via_post_notes(): void
+    {
+        $response = $this->actingAs($this->supervisor, 'sanctum')
+            ->postJson(route('api.general-manager.owner-payments.notes.store', $this->payment), [
+                'content' => 'رد المشرف على استفسار المالك',
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.content', 'رد المشرف على استفسار المالك')
+            ->assertJsonPath('data.author_name', $this->supervisor->name);
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $this->payment->id,
+            'notes' => 'رد المشرف على استفسار المالك',
+        ]);
     }
 }

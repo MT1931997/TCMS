@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\TenantStatus;
+use App\Enums\UnitStatus;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GeneralManager\StoreTenantRequest;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class TenantController extends Controller
 {
@@ -162,13 +164,37 @@ class TenantController extends Controller
     }
 
     /**
-     * Remove the specified tenant and user account.
+     * Remove the specified tenant, user account, and associated financial records.
      */
     public function destroy(TenantInfo $tenant): JsonResponse
     {
-        $user = $tenant->user;
-        $tenant->delete();
-        $user?->delete();
+        DB::transaction(function () use ($tenant) {
+            // Free any units leased by this tenant and delete contracts
+            foreach ($tenant->contracts as $contract) {
+                $contract->unit?->update(['status' => UnitStatus::Vacant]);
+                $contract->dues()->delete();
+                $contract->delete();
+            }
+
+            // Remove associated payments, attachments, and payment notes
+            foreach ($tenant->payments as $payment) {
+                if ($payment->attachment_path && Storage::disk('local')->exists($payment->attachment_path)) {
+                    Storage::disk('local')->delete($payment->attachment_path);
+                }
+                $payment->notesList()->delete();
+                $payment->delete();
+            }
+
+            $tenant->dues()->delete();
+            $tenant->promises()->delete();
+            $tenant->notesList()->delete();
+            $tenant->noticeRequests()->delete();
+            $tenant->maintenanceRequests()->update(['tenant_id' => null]);
+
+            $user = $tenant->user;
+            $tenant->delete();
+            $user?->delete();
+        });
 
         return ApiResponse::success(null, 'تم حذف المستأجر وحسابه بنجاح.');
     }

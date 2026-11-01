@@ -236,7 +236,7 @@ class MaintenanceWorkService
             'all_count' => $allCount,
         ];
 
-        $tab = $filters['tab'] ?? null;
+        $tab = $filters['tab'] ?? $filters['status'] ?? null;
 
         if ($tab === 'pending') {
             $pendingWorks = (clone $baseQuery)
@@ -245,6 +245,7 @@ class MaintenanceWorkService
                 ->paginate($perPage);
 
             return [
+                'works' => $pendingWorks,
                 'pending_works' => $pendingWorks,
                 'counters' => $counters,
             ];
@@ -261,7 +262,48 @@ class MaintenanceWorkService
                 ->paginate($perPage);
 
             return [
+                'works' => $historyWorks,
                 'history_works' => $historyWorks,
+                'counters' => $counters,
+            ];
+        }
+
+        if ($tab === 'approved') {
+            $approvedWorks = (clone $baseQuery)
+                ->where('status', MaintenanceWorkStatus::Approved->value)
+                ->latest('owner_decision_at')
+                ->latest('id')
+                ->paginate($perPage);
+
+            return [
+                'works' => $approvedWorks,
+                'history_works' => $approvedWorks,
+                'counters' => $counters,
+            ];
+        }
+
+        if ($tab === 'rejected') {
+            $rejectedWorks = (clone $baseQuery)
+                ->where('status', MaintenanceWorkStatus::Rejected->value)
+                ->latest('owner_decision_at')
+                ->latest('id')
+                ->paginate($perPage);
+
+            return [
+                'works' => $rejectedWorks,
+                'history_works' => $rejectedWorks,
+                'counters' => $counters,
+            ];
+        }
+
+        if ($tab === 'all') {
+            $allWorks = (clone $baseQuery)
+                ->latest('id')
+                ->paginate($perPage);
+
+            return [
+                'works' => $allWorks,
+                'all_works' => $allWorks,
                 'counters' => $counters,
             ];
         }
@@ -281,7 +323,12 @@ class MaintenanceWorkService
             ->latest('id')
             ->get();
 
+        $allList = (clone $baseQuery)
+            ->latest('id')
+            ->get();
+
         return [
+            'works' => $allList,
             'pending_list' => $pendingList,
             'history_list' => $historyList,
             'counters' => $counters,

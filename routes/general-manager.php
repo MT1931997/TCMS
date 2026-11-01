@@ -72,6 +72,8 @@ Route::delete('payments/approvals/{payment}', [PaymentApprovalController::class,
 
 // سدادات الملاك
 Route::get('owner-payments', [OwnerPaymentController::class, 'index'])->name('api.general-manager.owner-payments.index');
+Route::get('owner-payments/{payment}/notes', [OwnerPaymentController::class, 'notes'])->name('api.general-manager.owner-payments.notes.index');
+Route::post('owner-payments/{payment}/notes', [OwnerPaymentController::class, 'storeNote'])->name('api.general-manager.owner-payments.notes.store');
 Route::put('owner-payments/{payment}/notes', [OwnerPaymentController::class, 'updateNotes'])->name('api.general-manager.owner-payments.notes.update');
 
 // طلبات الإشعارات (إدارة طلبات الإشعارات، وإصدارها، واعتماد إثبات التسليم أو الرفض)

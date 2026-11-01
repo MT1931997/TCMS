@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\GeneralManager;
 
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PaymentNoteResource;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Support\ApiResponse;
@@ -18,7 +19,7 @@ class OwnerPaymentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Payment::with(['tenant.user', 'tenant.owner', 'collector', 'reviewer'])
+        $query = Payment::with(['tenant.user', 'tenant.owner', 'collector', 'reviewer', 'notesList.user'])
             ->whereHas('tenant', function ($tq) {
                 $tq->whereNotNull('owner_id');
             });
@@ -88,6 +89,57 @@ class OwnerPaymentController extends Controller
     }
 
     /**
+     * Display notes/comments for a specific owner payment.
+     */
+    public function notes(Payment $payment): JsonResponse
+    {
+        $notes = $payment->notesList()->with('user')->get();
+
+        return ApiResponse::success([
+            'payment' => [
+                'id' => $payment->id,
+                'property_unit' => $payment->tenant?->property_unit,
+                'amount' => (float) $payment->amount,
+                'period' => $payment->period,
+            ],
+            'notes' => PaymentNoteResource::collection($notes),
+        ], 'تم استرجاع ملاحظات السداد بنجاح.');
+    }
+
+    /**
+     * Add a new note/comment on an owner payment by supervisor.
+     */
+    public function storeNote(Request $request, Payment $payment): JsonResponse
+    {
+        $content = $request->input('content') ?? $request->input('notes');
+
+        $validated = validator(['content' => $content], [
+            'content' => ['required', 'string', 'max:1000'],
+        ], [
+            'content.required' => 'نص الملاحظة مطلوب.',
+            'content.string' => 'الملاحظة يجب أن تكون نصاً صالحاً.',
+            'content.max' => 'الملاحظة يجب ألا تتجاوز 1000 حرف.',
+        ])->validate();
+
+        $note = $payment->notesList()->create([
+            'user_id' => $request->user()->id,
+            'content' => $validated['content'],
+        ]);
+
+        $payment->update([
+            'notes' => $validated['content'],
+        ]);
+
+        $note->load('user');
+
+        return ApiResponse::success(
+            new PaymentNoteResource($note),
+            'تمت إضافة الملاحظة بنجاح.',
+            201
+        );
+    }
+
+    /**
      * Update comments/notes for a specific payment in owner payments.
      */
     public function updateNotes(Request $request, Payment $payment): JsonResponse
@@ -99,7 +151,15 @@ class OwnerPaymentController extends Controller
         ]);
 
         $payment->update($validated);
-        $payment->load(['tenant.user', 'tenant.owner', 'collector']);
+
+        if (! empty($validated['notes'])) {
+            $payment->notesList()->create([
+                'user_id' => $request->user()->id,
+                'content' => $validated['notes'],
+            ]);
+        }
+
+        $payment->load(['tenant.user', 'tenant.owner', 'collector', 'notesList.user']);
 
         return ApiResponse::success(
             new PaymentResource($payment),

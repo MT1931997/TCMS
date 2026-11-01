@@ -24,7 +24,10 @@ class MaintenanceRequestController extends Controller
 
         $baseQuery = MaintenanceRequest::query()
             ->with(['tenant.user', 'owner', 'reviewer'])
-            ->where('owner_id', $owner->id)
+            ->where(function ($q) use ($owner) {
+                $q->where('owner_id', $owner->id)
+                    ->orWhereHas('tenant', fn ($tq) => $tq->where('owner_id', $owner->id));
+            })
             ->where('supervisor_status', MaintenanceRequestSupervisorStatus::Approved->value);
 
         // Search: title, property_unit, tenant_name, ticket_number
@@ -53,8 +56,8 @@ class MaintenanceRequestController extends Controller
         $historyCount = $approvedCount + $rejectedCount;
         $allCount = (clone $baseQuery)->count();
 
-        // Optional tab filter
-        $tab = $request->input('tab');
+        // Optional tab / status filter
+        $tab = $request->input('tab') ?? $request->input('status');
 
         if ($tab === 'pending') {
             $pendingRequests = (clone $baseQuery)
@@ -65,6 +68,7 @@ class MaintenanceRequestController extends Controller
 
             return ApiResponse::success([
                 'requests' => MaintenanceRequestResource::collection($pendingRequests),
+                'pending_requests' => MaintenanceRequestResource::collection($pendingRequests),
                 'pagination' => [
                     'total' => $pendingRequests->total(),
                     'per_page' => $pendingRequests->perPage(),
@@ -93,6 +97,7 @@ class MaintenanceRequestController extends Controller
 
             return ApiResponse::success([
                 'requests' => MaintenanceRequestResource::collection($historyRequests),
+                'history_requests' => MaintenanceRequestResource::collection($historyRequests),
                 'pagination' => [
                     'total' => $historyRequests->total(),
                     'per_page' => $historyRequests->perPage(),
@@ -107,6 +112,30 @@ class MaintenanceRequestController extends Controller
                     'all_count' => $allCount,
                 ],
             ], 'تم جلب سجل قرارات الصيانة بنجاح.');
+        }
+
+        if ($tab === 'all') {
+            $allRequests = (clone $baseQuery)
+                ->latest('reviewed_at')
+                ->latest('id')
+                ->paginate(min(max($request->integer('per_page', 15), 1), 100));
+
+            return ApiResponse::success([
+                'requests' => MaintenanceRequestResource::collection($allRequests),
+                'pagination' => [
+                    'total' => $allRequests->total(),
+                    'per_page' => $allRequests->perPage(),
+                    'current_page' => $allRequests->currentPage(),
+                    'last_page' => $allRequests->lastPage(),
+                ],
+                'counters' => [
+                    'pending_count' => $pendingCount,
+                    'history_count' => $historyCount,
+                    'approved_count' => $approvedCount,
+                    'rejected_count' => $rejectedCount,
+                    'all_count' => $allCount,
+                ],
+            ], 'تم جلب جميع طلبات الصيانة بنجاح.');
         }
 
         // Default view: return both pending requests and history log
@@ -125,7 +154,13 @@ class MaintenanceRequestController extends Controller
             ->latest('id')
             ->get();
 
+        $allList = (clone $baseQuery)
+            ->latest('reviewed_at')
+            ->latest('id')
+            ->get();
+
         return ApiResponse::success([
+            'requests' => MaintenanceRequestResource::collection($allList),
             'pending_requests' => MaintenanceRequestResource::collection($pendingList),
             'history_requests' => MaintenanceRequestResource::collection($historyList),
             'counters' => [

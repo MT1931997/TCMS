@@ -15,6 +15,16 @@ class StorePaymentNoteRequest extends FormRequest
     }
 
     /**
+     * Prepare inputs for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('content') && $this->filled('notes')) {
+            $this->merge(['content' => $this->input('notes')]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, array<int, mixed>>
@@ -23,6 +33,7 @@ class StorePaymentNoteRequest extends FormRequest
     {
         return [
             'content' => ['required', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -37,6 +48,8 @@ class StorePaymentNoteRequest extends FormRequest
             'content.required' => 'نص الملاحظة مطلوب.',
             'content.string' => 'الملاحظة يجب أن تكون نصاً صالحاً.',
             'content.max' => 'الملاحظة يجب ألا تتجاوز 1000 حرف.',
+            'notes.string' => 'التعليق يجب أن يكون نصاً صالحاً.',
+            'notes.max' => 'التعليق يجب ألا يتجاوز 1000 حرف.',
         ];
     }
 }

@@ -25,42 +25,67 @@ class MaintenanceWorkController extends Controller
     {
         $owner = $request->user();
 
+        $tab = $request->input('tab') ?? $request->input('status');
+
         $result = $this->service->getOwnerListing(
             owner: $owner,
             filters: [
                 'search' => $request->input('search'),
-                'tab' => $request->input('tab'),
+                'tab' => $tab,
+                'status' => $request->input('status'),
             ],
             perPage: min(max($request->integer('per_page', 15), 1), 100)
         );
 
-        if (isset($result['pending_works'])) {
+        if ($tab === 'pending' || (isset($result['pending_works']) && ! isset($result['pending_list']))) {
+            $paginator = $result['pending_works'] ?? $result['works'];
+
             return ApiResponse::success([
-                'works' => MaintenanceWorkResource::collection($result['pending_works']),
+                'works' => MaintenanceWorkResource::collection($paginator),
+                'pending_works' => MaintenanceWorkResource::collection($paginator),
                 'pagination' => [
-                    'total' => $result['pending_works']->total(),
-                    'per_page' => $result['pending_works']->perPage(),
-                    'current_page' => $result['pending_works']->currentPage(),
-                    'last_page' => $result['pending_works']->lastPage(),
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
                 ],
                 'counters' => $result['counters'],
             ], 'تم جلب أعمال الصيانة بانتظار قراركم بنجاح.');
         }
 
-        if (isset($result['history_works'])) {
+        if ($tab === 'history' || (isset($result['history_works']) && ! isset($result['history_list']))) {
+            $paginator = $result['history_works'] ?? $result['works'];
+
             return ApiResponse::success([
-                'works' => MaintenanceWorkResource::collection($result['history_works']),
+                'works' => MaintenanceWorkResource::collection($paginator),
+                'history_works' => MaintenanceWorkResource::collection($paginator),
                 'pagination' => [
-                    'total' => $result['history_works']->total(),
-                    'per_page' => $result['history_works']->perPage(),
-                    'current_page' => $result['history_works']->currentPage(),
-                    'last_page' => $result['history_works']->lastPage(),
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
                 ],
                 'counters' => $result['counters'],
             ], 'تم جلب سجل قرارات أعمال الصيانة بنجاح.');
         }
 
+        if (isset($result['all_works'])) {
+            $paginator = $result['all_works'];
+
+            return ApiResponse::success([
+                'works' => MaintenanceWorkResource::collection($paginator),
+                'pagination' => [
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                ],
+                'counters' => $result['counters'],
+            ], 'تم جلب أعمال الصيانة بنجاح.');
+        }
+
         return ApiResponse::success([
+            'works' => MaintenanceWorkResource::collection($result['works'] ?? $result['pending_list']),
             'pending_works' => MaintenanceWorkResource::collection($result['pending_list']),
             'history_works' => MaintenanceWorkResource::collection($result['history_list']),
             'counters' => $result['counters'],

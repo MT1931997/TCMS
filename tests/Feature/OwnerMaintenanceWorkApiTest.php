@@ -220,4 +220,38 @@ class OwnerMaintenanceWorkApiTest extends TestCase
             ->assertJsonPath('data.work_order_number', $work->work_order_number)
             ->assertJsonPath('data.title', $work->title);
     }
+
+    public function test_owner_sees_maintenance_work_added_by_supervisor_via_status_parameter(): void
+    {
+        // Supervisor creates maintenance work
+        $createResponse = $this->actingAs($this->generalManager, 'sanctum')
+            ->postJson(route('api.general-manager.maintenance-works.store'), [
+                'owner_id' => $this->owner->id,
+                'property_unit' => 'برج النور - شقة 101',
+                'title' => 'صيانة سباكة طارئة',
+                'description' => 'تم استبدال المحبس الرئيسي ومواسير التغذية',
+            ]);
+
+        $createResponse->assertCreated();
+        $workId = $createResponse->json('data.id');
+
+        // Owner views maintenance works using Postman query pattern: ?status=pending
+        $response = $this->actingAs($this->owner, 'sanctum')
+            ->getJson(route('api.owner.maintenance-works.index', ['status' => 'pending']));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.works.0.id', $workId)
+            ->assertJsonPath('data.works.0.title', 'صيانة سباكة طارئة')
+            ->assertJsonPath('data.pending_works.0.id', $workId);
+
+        // Owner views maintenance works without query parameters
+        $defaultResponse = $this->actingAs($this->owner, 'sanctum')
+            ->getJson(route('api.owner.maintenance-works.index'));
+
+        $defaultResponse->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.works.0.id', $workId)
+            ->assertJsonPath('data.pending_works.0.id', $workId);
+    }
 }

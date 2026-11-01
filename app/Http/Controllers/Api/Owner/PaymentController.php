@@ -127,9 +127,15 @@ class PaymentController extends Controller
             return ApiResponse::error('ليس لديك صلاحية لإضافة ملاحظة على هذا السداد.', 403);
         }
 
+        $content = $request->validated('content');
+
         $note = $payment->notesList()->create([
             'user_id' => $request->user()->id,
-            'content' => $request->validated('content'),
+            'content' => $content,
+        ]);
+
+        $payment->update([
+            'notes' => $content,
         ]);
 
         $note->load('user');
